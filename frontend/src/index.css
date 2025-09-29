@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+  --primary-color: #FF6500;      /* Bright accent / orange */
+  --secondary-color: #1E3E62;    /* Dark blue for text / accents */
+  --tertiary-color: #0B192C;     /* Can be used sparingly for borders or shadows */
+  --background-color: #FFFFFF;   /* Light background */
+  --text-color: #1E3E62;         /* Dark text for readability */
+  --muted-color: #666666;        /* For secondary text */
+  --border-color: #E0E0E0;       /* Light gray borders */
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  line-height: 1.6;
+}

@@ -1,0 +1,16 @@
+#cont{
+    padding: 20px;
+}
+#cont>*{
+    cursor: pointer;
+    user-select: none;
+    margin: 10px;
+}
+#cont>input{
+    padding: 7px;
+    cursor:text;
+}
+
+#links>*{
+    cursor: pointer;
+}
