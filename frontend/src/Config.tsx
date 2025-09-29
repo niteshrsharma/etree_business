@@ -49,3 +49,4 @@ export const components: PanelItem[] = [
     permissions: [],
   }
 ];
+// this is configuration file
