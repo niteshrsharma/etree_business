@@ -160,7 +160,7 @@ class UsersBAL:
         if not user or not verify_password(password, user.Password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=ResponseMessage(status="error", message="Invalid credentials").dict()
+                detail=ResponseMessage(status="error", message="Invalid credentials or account is not active").dict()
             )
 
         if not user.IsActive:

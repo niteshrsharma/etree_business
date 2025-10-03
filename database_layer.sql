@@ -6,9 +6,11 @@ CREATE TABLE "Roles" (
     "Id" SERIAL PRIMARY KEY,
     "Name" VARCHAR(50) NOT NULL UNIQUE,
     "Description" TEXT,
+    "RegistrationAllowed" BOOLEAN NOT NULL DEFAULT FALSE, --need to add it to the backend
     "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
     "UpdatedAt" TIMESTAMPTZ
 );
+
 INSERT INTO "Roles" ("Name", "Description")
 VALUES
     ('Super User', 'Has full system access'),
@@ -54,7 +56,42 @@ CREATE TABLE "Otps" (
 );
 
 
+-- need to crate it in the backend
+CREATE TABLE "RequiredFieldsForUsers" (
+    "Id" SERIAL PRIMARY KEY,
+    "RoleId" INT NOT NULL REFERENCES "Roles"("Id"),        
+    "FieldName" VARCHAR(100) NOT NULL,               
+    "FieldType" VARCHAR(50) NOT NULL CHECK ("FieldType" IN ('text', 'mcq', 'msq', 'date', 'number')),
+    "IsRequired" BOOLEAN NOT NULL DEFAULT true,      
+    "FilledByRoleId" INT NOT NULL REFERENCES "Roles"("Id"),
+    "EditableByRoleId" INT REFERENCES "Roles"("Id"),    
+    "Options" JSONB,                                    -- for mcq/msq choices
+    "Validation" JSONB,                                 -- rules (min/max/regex etc.)
+    "DisplayOrder" INT,                                -- for form rendering
+    "IsActive" BOOLEAN NOT NULL DEFAULT true,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMPTZ
+);
 
+CREATE TRIGGER trg_required_fields_set_timestamps
+BEFORE INSERT OR UPDATE ON "RequiredFieldsForUsers"
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
+
+--create backend for this
+CREATE TABLE "UsersFieldData" (
+    "Id" SERIAL PRIMARY KEY,
+    "UserId" UUID NOT NULL REFERENCES "Users"("Id"),
+    "RequiredFieldId" INT NOT NULL REFERENCES "RequiredFieldsForUsers"("Id"),
+    "Value" JSONB NOT NULL,                   -- store text, number, date, or selected options
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMPTZ
+);
+
+CREATE TRIGGER trg_required_fields_data_set_timestamps
+BEFORE INSERT OR UPDATE ON "UsersFieldData"
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
 
 CREATE OR REPLACE FUNCTION set_timestamps()
 RETURNS TRIGGER AS $$
