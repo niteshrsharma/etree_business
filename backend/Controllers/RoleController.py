@@ -14,15 +14,21 @@ def role_to_dict(role):
         "id": role.Id,
         "name": role.Name,
         "description": role.Description,
+        "registration_allowed": role.RegistrationAllowed,
         "created_at": role.CreatedAt,
         "updated_at": role.UpdatedAt,
     }
 
 
 @router.post("/", response_model=ResponseMessage)
-async def create_role(name: str, description: str = None, user=Depends(users_bal.is_valid_user('Super User', 'Admin'))):
+async def create_role(
+    name: str, 
+    description: str = None, 
+    registration_allowed: bool = False,  # new parameter
+    user=Depends(users_bal.is_valid_user('Super User', 'Admin'))
+):
     try:
-        role = await roles_bal.create_role(name, description)
+        role = await roles_bal.create_role(name, description, registration_allowed)
         return ResponseMessage(status="success", message="Role created", data=role_to_dict(role))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -53,9 +59,15 @@ async def get_all_roles(user=Depends(users_bal.is_user_authenticated())):
 
 
 @router.put("/{role_id}", response_model=ResponseMessage)
-async def update_role(role_id: int, name: str = None, description: str = None, user=Depends(users_bal.is_valid_user('Super User', 'Admin'))):
+async def update_role(
+    role_id: int, 
+    name: str = None, 
+    description: str = None,
+    registration_allowed: bool = None,  # new parameter
+    user=Depends(users_bal.is_valid_user('Super User', 'Admin'))
+):
     try:
-        updated_role = await roles_bal.update_role(role_id, name, description)
+        updated_role = await roles_bal.update_role(role_id, name, description, registration_allowed)
         return ResponseMessage(status="success", message="Role updated", data=role_to_dict(updated_role))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -68,3 +80,8 @@ async def delete_role(role_id: int, user=Depends(users_bal.is_valid_user('Super 
         return ResponseMessage(status="success", message="Role deleted")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/signup-roles", response_model=ResponseMessage)
+async def get_roles_for_signup():
+    roles = await roles_bal.get_roles_for_signup()
+    return ResponseMessage(status="success", message="Signup roles fetched", data=[role_to_dict(r) for r in roles])
