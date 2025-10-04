@@ -6,7 +6,7 @@ CREATE TABLE "Roles" (
     "Id" SERIAL PRIMARY KEY,
     "Name" VARCHAR(50) NOT NULL UNIQUE,
     "Description" TEXT,
-    "RegistrationAllowed" BOOLEAN NOT NULL DEFAULT FALSE, --need to add it to the backend
+    "RegistrationAllowed" BOOLEAN NOT NULL DEFAULT FALSE,
     "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
     "UpdatedAt" TIMESTAMPTZ
 );
@@ -65,9 +65,9 @@ CREATE TABLE "RequiredFieldsForUsers" (
     "IsRequired" BOOLEAN NOT NULL DEFAULT true,      
     "FilledByRoleId" INT NOT NULL REFERENCES "Roles"("Id"),
     "EditableByRoleId" INT REFERENCES "Roles"("Id"),    
-    "Options" JSONB,                                    -- for mcq/msq choices
-    "Validation" JSONB,                                 -- rules (min/max/regex etc.)
-    "DisplayOrder" INT,                                -- for form rendering
+    "Options" JSONB,                                    
+    "Validation" JSONB,                                
+    "DisplayOrder" INT,                                
     "IsActive" BOOLEAN NOT NULL DEFAULT true,
     "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
     "UpdatedAt" TIMESTAMPTZ
