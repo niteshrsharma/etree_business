@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAll } from "../../context/AllContext";
 import { FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
-import { toast } from "react-hot-toast";
 import { useLoader } from "../../common/Loader";
+import styles from './Roles.module.css';
 
 export default function Roles() {
     const { roles } = useAll();
@@ -61,18 +61,16 @@ export default function Roles() {
                     formData.description,
                     formData.registration_allowed
                 );
-                toast.success("Role updated successfully!");
             } else {
                 await roles.createRole(
                     formData.name,
                     formData.description,
                     formData.registration_allowed
                 );
-                toast.success("Role created successfully!");
             }
             setEditingRoleId(null);
         } catch (err: any) {
-            toast.error(err.message || "Error saving role");
+            console.log(err.message || "Error saving role");
         } finally {
             showLoader(false);
         }
@@ -85,9 +83,8 @@ export default function Roles() {
         showLoader(true);
         try {
             await roles.deleteRole(roleId);
-            toast.success("Role deleted successfully!");
         } catch (err: any) {
-            toast.error(err.message || "Error deleting role");
+            console.log(err.message || "Error deleting role");
         } finally {
             showLoader(false);
         }
@@ -95,46 +92,40 @@ export default function Roles() {
 
     return (<>
         <h1 className="text-3xl font-bold text-gray-800 mb-6" style={{ padding: "21px" }}>Roles Management</h1>
-
         {/* Role Form */}
         <form
             onSubmit={handleSubmit}
-            className="bg-white border border-gray-200 shadow-lg rounded-xl p-6 mb-8 flex flex-col md:flex-row md:items-end md:space-x-6 gap-4 transition-all duration-300"
+            className={styles.formCont}
         >
-            <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Role Name</label>
+            <div>
+                <label>Role Name</label>
                 <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 />
             </div>
-            <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+            <div>
+                <label>Description</label>
                 <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 />
             </div>
-            <div className="flex items-center space-x-2">
+            <div>
                 <input
                     type="checkbox"
                     name="registration_allowed"
                     checked={formData.registration_allowed}
                     onChange={handleChange}
-                    className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors"
                 />
-                <span className="text-sm text-gray-700 font-medium">Registration Allowed</span>
+                <span>Registration Allowed</span>
             </div>
-            <div className="flex gap-2">
                 <button
                     type="submit"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2 rounded-lg flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
                 >
                     {editingRoleId !== null ? <FiEdit /> : <FiPlus />}
                     {editingRoleId !== null ? "Update Role" : "Add Role"}
@@ -143,33 +134,31 @@ export default function Roles() {
                     <button
                         type="button"
                         onClick={() => setEditingRoleId(null)}
-                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-all"
                     >
                         Cancel
                     </button>
                 )}
-            </div>
         </form>
 
 
         {/* Roles Table */}
-        <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-lg">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-lg" style={{padding: "20px"}}>
             <table className="table-auto min-w-full bg-white divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
                         <th className="px-6 py-3 text-left text-gray-700 font-semibold uppercase tracking-wider">Name</th>
                         <th className="px-6 py-3 text-left text-gray-700 font-semibold uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-center text-gray-700 font-semibold uppercase tracking-wider">Registration Allowed</th>
+                        <th className="px-6 py-3 text-center text-gray-700 font-semibold uppercase tracking-wider">Allow Signup</th>
                         <th className="px-6 py-3 text-center text-gray-700 font-semibold uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                     {roles.roles.map((role) => (
-                        <tr key={role.id} className="hover:bg-gray-50 transition-colors">
+                        <tr key={role.id} className="hover:bg-gray-50 transition-colors" id={styles.tableRow}>
                             <td className="px-6 py-4 text-gray-800 font-medium">{role.name}</td>
                             <td className="px-6 py-4 text-gray-600">{role.description || "-"}</td>
                             <td className="px-6 py-4 text-center">{role.registration_allowed ? "✔️" : "❌"}</td>
-                            <td className="px-6 py-4 flex justify-center gap-3">
+                            <td className="px-6 py-4  text-center">
                                 <button
                                     onClick={() => handleEdit(role.id)}
                                     className="text-indigo-600 hover:text-indigo-800 transition-colors"

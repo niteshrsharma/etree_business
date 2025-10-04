@@ -1,0 +1,113 @@
+.formCont {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding:2rem; /* compact padding */
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: wrap; /* wrap on small screens */
+}
+
+.formCont div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid black;
+  padding: 9px;
+  border-radius: 0.5rem;
+  height: 71px;
+}
+
+.formCont label {
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.formCont input[type="text"],
+.formCont textarea {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.formCont textarea {
+  min-width: 200px;
+  height: fit-content;
+  resize: none;
+}
+
+.formCont input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1);
+}
+
+.formCont span {
+  font-size: 0.9rem;
+}
+
+.formCont button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.formCont button[type="submit"] {
+  background-color: #004a4f;
+  color: #ffffff;
+}
+
+.formCont button[type="submit"]:hover {
+  background-color: #04557d;
+}
+
+#tableRow>*{
+    padding: 10px;
+    height: 100%;
+}
+
+#tableRow>*>button{
+    padding: 10px;
+}
+
+.formCont button[type="button"] {
+  background-color: #005bb5;
+  color: #ffffff;
+}
+
+.formCont button[type="button"]:hover {
+  background-color: #004080;
+}
+
+/* Responsive: wrap items on small screens */
+@media (max-width: 600px) {
+  .formCont {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .formCont div {
+    justify-content: flex-start;
+  }
+
+  .formCont button {
+    width: 50%;
+    justify-content: center;
+  }
+
+  .formCont textarea {
+    width: 100%;
+    overflow-x: auto;
+    height: fit-content;
+  }
+}

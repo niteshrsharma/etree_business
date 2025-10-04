@@ -7,6 +7,7 @@ import { useAll } from "./context/AllContext";
 import { useEffect, type ReactNode } from "react";
 import { useLoader } from "./common/Loader";
 import Signup from "./components/signup/Signup";
+import { Toaster } from "react-hot-toast";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -45,7 +46,10 @@ export default function App() {
     <BrowserRouter>
       {/* Navigation only when logged in */}
       {auth.user && <Navigation />}
-
+      <Toaster
+        position="top-right" 
+        reverseOrder={false} 
+      />
       <Routes>
         {/* Login route */}
         <Route

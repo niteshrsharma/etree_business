@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, useMemo, useCallback } 
 import type { ReactNode } from "react";
 import { roleService } from "../services/roles";
 import type { Role } from "../services/roles";
+import { toast } from "react-hot-toast";
 
 interface RolesContextType {
   roles: Role[];
@@ -55,9 +56,11 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
       try {
         const newRole = await roleService.createRole(name, description, registration_allowed);
         setRoles((prev) => [...prev, newRole]);
+        toast.success("Role Created Successfully");
         return newRole;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Create role error:", error);
+        toast.error(error.response.data.detail)
         return null;
       }
     },
@@ -70,9 +73,11 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
       try {
         const updatedRole = await roleService.updateRole(roleId, name, description, registration_allowed);
         setRoles((prev) => prev.map((r) => (r.id === roleId ? updatedRole : r)));
+        toast.success("Role Updated Successfully");
         return updatedRole;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Update role error:", error);
+        toast.error(error.response.data.message)
         return null;
       }
     },
@@ -85,9 +90,11 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
       try {
         await roleService.deleteRole(roleId);
         setRoles((prev) => prev.filter((r) => r.id !== roleId));
+        toast.success("Role Deleted Successfully");
         return true;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Delete role error:", error);
+        toast.error(error.response.data.message)
         return false;
       }
     },

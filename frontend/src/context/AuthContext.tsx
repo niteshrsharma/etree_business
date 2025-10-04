@@ -5,6 +5,7 @@ import { AuthService } from "../services/users";
 import type { User } from "../services/users";
 import { roleService } from "../services/roles";
 import type { Role } from "../services/roles";
+import { toast } from "react-hot-toast";
 
 interface AuthContextType {
   user: User | null;
@@ -52,10 +53,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const res = await AuthService.login(email, password);
       if (res.status === "success") {
         await refreshUser();
+        toast.success("Logged in successfully");
       } else {
         throw new Error(res.message);
       }
-    } finally {
+    }catch(err: any){
+      toast.error(err.response.data.detail.message)
+    } 
+    finally {
       setIsLoading(false);
     }
   };

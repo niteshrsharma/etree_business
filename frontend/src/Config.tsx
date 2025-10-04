@@ -1,7 +1,7 @@
 import { FaUserCog } from "react-icons/fa";
 import { GiArchiveRegister } from "react-icons/gi";
 import { FaPeopleGroup } from "react-icons/fa6";
-import RegisterUser from "./components/register_user/RegisterUser";
+import AddUser from "./components/add_user/AddUser";
 import Profile from "./components/profile/Profile";
 import Roles from "./components/roles/Roles";
 
@@ -41,11 +41,11 @@ export const components: PanelItem[] = [
     permissions: [roles.su, roles.admin]
   },
   {
-    name: "Register",
-    route: "/register",
+    name: "Add User",
+    route: "/add-user",
     icon: <GiArchiveRegister />,
     section: sections.master,
-    element: <RegisterUser />,
+    element: <AddUser />,
     permissions: [roles.su, roles.admin],
   },
   {

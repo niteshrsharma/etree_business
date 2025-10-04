@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAll } from "../../context/AllContext";
 import { backendUrl } from '../../services/base';
 import ProfilePicturePopup from "./profilePicturePopup/ProfilePicturePopup";
@@ -6,29 +6,32 @@ import ProfilePicturePopup from "./profilePicturePopup/ProfilePicturePopup";
 export default function Profile() {
     const { auth } = useAll();
     const [isProfilePicturePopup, setProfilePicturePopup] = useState(false);
-    const popupRef = useRef(null);
+    const popupRef = useRef<HTMLDivElement>(null);
 
     const profileImage = auth.user?.profile_picture
         ? `${backendUrl}${auth.user.profile_picture}`
         : `${backendUrl}/media/default.png`;
 
-    // useEffect(() => {
-    //     function handleClickOutside(event) {
-    //         if (popupRef.current && !popupRef.current.contains(event.target)) {
-    //             setProfilePicturePopup(false);
-    //         }
-    //     }
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+                setProfilePicturePopup(false);
+            }
+        }
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+            setProfilePicturePopup(false);
+            }
+        }
+        if (isProfilePicturePopup) {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("keydown", handleEscape);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isProfilePicturePopup]);
 
-    //     if (isProfilePicturePopup) {
-    //         document.addEventListener("mousedown", handleClickOutside);
-    //     } else {
-    //         document.removeEventListener("mousedown", handleClickOutside);
-    //     }
-
-    //     return () => {
-    //         document.removeEventListener("mousedown", handleClickOutside);
-    //     };
-    // }, [isProfilePicturePopup]);
 
     return (
         <>
@@ -50,10 +53,11 @@ export default function Profile() {
 
             {
                 isProfilePicturePopup &&
-                <div ref={popupRef} className="">
-                    <ProfilePicturePopup />
-                </div>
+                    <div ref={popupRef}>
+                        <ProfilePicturePopup onClose={() => setProfilePicturePopup(false)} />
+                    </div>
             }
+
         </>
     );
 }
