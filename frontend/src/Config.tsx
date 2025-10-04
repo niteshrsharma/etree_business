@@ -1,12 +1,12 @@
 import { FaUserCog } from "react-icons/fa";
-import { FaUserGroup } from "react-icons/fa6";
+import { GiArchiveRegister } from "react-icons/gi";
+import { FaPeopleGroup } from "react-icons/fa6";
 import RegisterUser from "./components/register_user/RegisterUser";
 import Profile from "./components/profile/Profile";
-
+import Roles from "./components/roles/Roles";
 
 export const roles = {
   su: "Super User",
-  student: "Student",
   admin: "Admin",
 } as const;
 
@@ -33,9 +33,17 @@ export interface PanelItem {
 // Panel items array
 export const components: PanelItem[] = [
   {
+    name: "Roles",
+    route: "/roles",
+    icon: <FaPeopleGroup/>,
+    section: sections.master,
+    element: <Roles/>,
+    permissions: [roles.su, roles.admin]
+  },
+  {
     name: "Register",
     route: "/register",
-    icon: <FaUserGroup />,
+    icon: <GiArchiveRegister />,
     section: sections.master,
     element: <RegisterUser />,
     permissions: [roles.su, roles.admin],

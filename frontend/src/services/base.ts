@@ -31,3 +31,9 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export interface ResponseMessage<T = any> {
+  status: string;
+  message: string;
+  data: T;
+}

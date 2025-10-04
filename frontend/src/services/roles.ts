@@ -1,24 +1,20 @@
 // src/api/roles.ts
 import { api } from "./base";
+import type { ResponseMessage } from "./base";
 
 export interface Role {
   id: number;
   name: string;
   description?: string | null;
+  registration_allowed: boolean; // added field
   created_at: string;
   updated_at: string;
 }
 
-export interface ResponseMessage<T = any> {
-  status: string;
-  message: string;
-  data: T;
-}
-
 class RoleService {
   // Create a new role
-  async createRole(name: string, description?: string): Promise<Role> {
-    const response = await api.post<ResponseMessage<Role>>("/roles/", { name, description });
+  async createRole(name: string, description?: string, registration_allowed: boolean = false): Promise<Role> {
+    const response = await api.post<ResponseMessage<Role>>("/roles/", { name, description, registration_allowed });
     return response.data.data;
   }
 
@@ -41,14 +37,25 @@ class RoleService {
   }
 
   // Update a role
-  async updateRole(roleId: number, name?: string, description?: string): Promise<Role> {
-    const response = await api.put<ResponseMessage<Role>>(`/roles/${roleId}`, { name, description });
+  async updateRole(
+    roleId: number,
+    name?: string,
+    description?: string,
+    registration_allowed?: boolean
+  ): Promise<Role> {
+    const response = await api.put<ResponseMessage<Role>>(`/roles/${roleId}`, { name, description, registration_allowed });
     return response.data.data;
   }
 
   // Delete a role
   async deleteRole(roleId: number): Promise<void> {
     await api.delete<ResponseMessage>(`/roles/${roleId}`);
+  }
+
+  // Get roles allowed for signup
+  async getRolesForSignup(): Promise<Role[]> {
+    const response = await api.get<ResponseMessage<Role[]>>("/roles/signup-roles");
+    return response.data.data;
   }
 }
 

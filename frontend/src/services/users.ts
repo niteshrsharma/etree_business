@@ -1,5 +1,6 @@
 // src/api/users.tsx
 import { api } from "./base";
+import type { ResponseMessage } from "./base";
 
 // Types
 export interface User {
@@ -8,12 +9,6 @@ export interface User {
   full_name: string;
   role: string;
   profile_picture?: string | null;
-}
-
-export interface ResponseMessage<T = any> {
-  status: string;
-  message: string;
-  data?: T;
 }
 
 // AuthService object
