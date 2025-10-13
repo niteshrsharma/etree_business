@@ -1,9 +1,11 @@
 import { FaUserCog } from "react-icons/fa";
 import { GiArchiveRegister } from "react-icons/gi";
+import { GrDocumentUser } from "react-icons/gr";
 import { FaPeopleGroup } from "react-icons/fa6";
 import AddUser from "./components/add_user/AddUser";
 import Profile from "./components/profile/Profile";
 import Roles from "./components/roles/Roles";
+import UserFieldRequirements from "./components/userFieldRequirements/UserFieldRequirements";
 
 export const roles = {
   su: "Super User",
@@ -55,6 +57,14 @@ export const components: PanelItem[] = [
     section: sections.workspace,
     element: <Profile />,
     permissions: [],
+  },
+  {
+    name: "User Fields",
+    route: "/user-fields",
+    icon: <GrDocumentUser/>,
+    section: sections.master,
+    element: <UserFieldRequirements/>,
+    permissions: [roles.su, roles.admin]
   }
 ];
 // this is configuration file

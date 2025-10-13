@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from backend.config import settings, database
-from backend.Controllers import AuthController, RoleController
+from backend.Controllers import AuthController, RoleController, RequiredFieldsForUsersController
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
@@ -33,11 +33,10 @@ app.add_middleware(
 # api routes
 app.include_router(AuthController.router, prefix="/api/auth", tags=["auth"])
 app.include_router(RoleController.router, prefix="/api/roles", tags=["roles"])
-
+app.include_router(RequiredFieldsForUsersController.router, prefix='/api/user-required-fields', tags=["required fields for users"])
 # static file routes
 app.mount("/media", StaticFiles(directory="backend/Media"), name="media")
-app.mount("/assets", StaticFiles(directory="backend/Public/assets", html=True), name="frontend")
-app.mount("/", StaticFiles(directory="backend/Public", html=True), name="frontend")
+app.mount("/assets", StaticFiles(directory="backend/Public/assets"), name="frontend")
 
 @app.get("/{full_path:path}", response_class=HTMLResponse)
 async def serve_spa(full_path: str):

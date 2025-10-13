@@ -16,7 +16,7 @@ class Users(Base):
     ProfilePicture = Column(String(255), nullable=True)
     IsActive = Column(Boolean, nullable=False, default=True)
 
-    CreatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)
-    UpdatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    CreatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.now(datetime.UTC))
+    UpdatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.now(datetime.UTC), onupdate=datetime.datetime.now(datetime.UTC))
 
     Role = relationship("Roles", backref="Users")

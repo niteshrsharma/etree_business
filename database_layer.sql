@@ -1,7 +1,6 @@
 -- Active: 1758304756916@@127.0.0.1@5432@lms
 -- Using pgcrypto
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
 CREATE TABLE "Roles" (
     "Id" SERIAL PRIMARY KEY,
     "Name" VARCHAR(50) NOT NULL UNIQUE,
@@ -41,6 +40,7 @@ VALUES (
     'hashed_password_here',
     (SELECT "Id" FROM "Roles" WHERE "Name" = 'Super User')
 );
+
 CREATE TRIGGER trg_users_set_timestamps
 BEFORE INSERT OR UPDATE ON "Users"
 FOR EACH ROW
@@ -55,13 +55,12 @@ CREATE TABLE "Otps" (
     "CreatedAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
-
 -- need to crate it in the backend
 CREATE TABLE "RequiredFieldsForUsers" (
     "Id" SERIAL PRIMARY KEY,
-    "RoleId" INT NOT NULL REFERENCES "Roles"("Id"),        
+    "RoleId" INT NOT NULL REFERENCES "Roles"("Id") ON DELETE CASCADE,        
     "FieldName" VARCHAR(100) NOT NULL,               
-    "FieldType" VARCHAR(50) NOT NULL CHECK ("FieldType" IN ('text', 'mcq', 'msq', 'date', 'number')),
+    "FieldType" VARCHAR(50) NOT NULL CHECK ("FieldType" IN ('text', 'mcq', 'msq', 'date', 'number', 'document')),
     "IsRequired" BOOLEAN NOT NULL DEFAULT true,      
     "FilledByRoleId" INT NOT NULL REFERENCES "Roles"("Id"),
     "EditableByRoleId" INT REFERENCES "Roles"("Id"),    

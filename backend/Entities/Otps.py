@@ -13,7 +13,7 @@ class Otps(Base):
     Code = Column(String(10), nullable=False)
     IsUsed = Column(Boolean, nullable=False, default=False)
     ExpiresAt = Column(TIMESTAMP(timezone=True), nullable=False)
-    CreatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)
+    CreatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.now(datetime.UTC), nullable=False)
 
     # Relationship to user
     User = relationship("Users", backref="Otps")

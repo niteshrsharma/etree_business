@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userRes = await AuthService.getCurrentUser();
         if (userRes.status === "success" && userRes.data) {
           setUser(userRes.data);
-          console.log("refreshUser - user:", userRes.data);
         }
 
         const rolesRes = await roleService.getAllRoles();

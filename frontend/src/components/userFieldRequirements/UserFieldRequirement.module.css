@@ -1,0 +1,117 @@
+.container {
+  padding: 1.5rem;
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.addButton {
+  padding: 0.5rem 1rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addButton:hover {
+  background-color: #3730a3;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.row:hover {
+  background-color: #f9fafb;
+}
+
+.editBtn,
+.deactivateBtn {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+
+.activateBtn{
+    padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+
+.editBtn {
+  background-color: #10b981;
+  color: white;
+}
+
+.editBtn:hover {
+  background-color: #059669;
+}
+
+.deactivateBtn {
+  background-color: #ef4444;
+  color: white;
+}
+
+
+.activateBtn {
+  background-color: #4fef44;
+  color: white;
+}
+
+.deactivateBtn:hover {
+  background-color: #b91c1c;
+}
+
+.activateBtn:hover {
+  background-color: #067c0e;
+}
+
+/* Popup */
+.popupWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}

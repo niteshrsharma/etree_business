@@ -8,7 +8,7 @@ class OtpsDAL(BaseDAL):
         super().__init__(Otps)
 
     async def create_otp(self, user_id: str, code: str, expires_in_minutes: int = 10):
-        expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=expires_in_minutes)
+        expires_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=expires_in_minutes)
         otp = Otps(UserId=user_id, Code=code, ExpiresAt=expires_at)
         return await self.add(otp)  # BaseDAL helper
 
@@ -16,7 +16,7 @@ class OtpsDAL(BaseDAL):
         """
         Fetch OTP if it exists, is not used, and not expired
         """
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         stmt = (
             select(Otps)
             .where(

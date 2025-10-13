@@ -10,7 +10,7 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const {auth}=useAll();
+  const { auth } = useAll();
   // Close panel on outside click (desktop + mobile)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,9 +46,9 @@ export default function Navigation() {
           hover:from-blue-600 hover:to-indigo-700  /* hover gradient effect */
           transition-all duration-300 ease-in-out   /* smooth transition */
           flex items-center justify-center           /* center icon nicely */
-        "      
-        style={{padding: "5px", borderRadius: "9px", cursor: "pointer"}}
-        >
+        "
+        style={{ padding: "5px", borderRadius: "9px", cursor: "pointer" }}
+      >
         {isOpen ? <AiOutlineClose size={24} /> : <AiOutlineMenu size={24} />}
       </button>
 
@@ -73,48 +73,72 @@ export default function Navigation() {
       >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-800" style={{padding: '7px', userSelect: "none"}}>Menu</h2>
+          <h2 className="text-lg font-semibold text-gray-800" style={{ padding: '7px', userSelect: "none" }}>Menu</h2>
           <button
             onClick={() => setIsOpen(false)}
             className="text-gray-500 hover:text-gray-800"
-            style={{padding: "7px", cursor: "pointer"}}
+            style={{ padding: "7px", cursor: "pointer" }}
           >
             <AiOutlineClose size={20} />
           </button>
         </div>
 
         {/* Sections */}
-        <div className="p-4 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 64px)', padding: "7px"}}>
-          {Object.values(sections).map((sectionName) => (
-            <div key={sectionName} className="mb-4" style={{padding: '7px'}}>
-              <h3 className="font-medium text-gray-800 mb-2" style={{userSelect: "none"}}>{sectionName}</h3>
-              <ul className="pl-2 space-y-1">
-                {components
-                  .filter((item: PanelItem) => item.section === sectionName)
-                  .map((item) => (
+        <div
+          className="p-4 overflow-y-auto flex-1"
+          style={{ maxHeight: 'calc(100vh - 64px)', padding: '7px' }}
+        >
+          {Object.values(sections).map((sectionName) => {
+            // Filter items for this section that the user has access to
+            const visibleItems = components.filter((item: PanelItem) => {
+              // Determine if user role is allowed
+              const allowedRoles = Object.values(item.permissions); // ["Super User", "Admin"]
+              const userRole = allowedRoles.includes(auth.user?.role as any)
+                ? (auth.user?.role as (typeof allowedRoles)[number])
+                : undefined;
+
+              // Include item if permissions is empty or userRole is allowed
+              return item.section === sectionName &&
+                (item.permissions.length === 0 || (userRole && item.permissions.includes(userRole)));
+            });
+
+            // If no items to show, skip rendering this section
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={sectionName} className="mb-4" style={{ padding: '7px' }}>
+                <h3
+                  className="font-medium text-gray-800 mb-2"
+                  style={{ userSelect: 'none' }}
+                >
+                  {sectionName}
+                </h3>
+                <ul className="pl-2 space-y-1">
+                  {visibleItems.map((item) => (
                     <li
                       key={item.name}
-                      className="flex items-center text-gray-00 hover:text-primary cursor-pointer space-x-2"
+                      className="flex items-center text-gray-800 hover:text-primary cursor-pointer space-x-2"
                       onClick={() => handleNavigate(item.route)}
-                      style={{marginTop:"7px", userSelect: "none"}}
+                      style={{ marginLeft: "21px", marginTop: '7px', userSelect: 'none' }}
                     >
                       {item.icon &&
                         React.isValidElement(item.icon)
-                          ? React.cloneElement(item.icon as React.ReactElement<any>, { size: 20 })
-                          : item.icon
+                        ? React.cloneElement(item.icon as React.ReactElement<any>, { size: 20 })
+                        : item.icon
                       }
-                      <span style={{marginLeft: "7px"}}>{item.name}</span>
+                      <span style={{ marginLeft: '7px' }}>{item.name}</span>
                     </li>
                   ))}
-              </ul>
-            </div>
-          ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         <div className="absolute bottom-4 right-4">
           <button
-          style={{padding: "3px", cursor: "pointer", userSelect: "none"}}
-          onClick={auth.logout}
+            style={{ padding: "3px", cursor: "pointer", userSelect: "none" }}
+            onClick={auth.logout}
             className="
               bg-red-800 text-white
               hover:bg-red-600
@@ -124,7 +148,7 @@ export default function Navigation() {
               flex items-center justify-center
             "
           >
-            <IoMdLogOut size={25}/>
+            <IoMdLogOut size={25} />
           </button>
         </div>
       </div>

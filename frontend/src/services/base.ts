@@ -18,7 +18,6 @@ api.interceptors.request.use(
     if (config.url && !config.url.startsWith("/api")) {
       config.url = `/api${config.url}`;
     }
-    console.log("Sending request:", config.method, config.url);
     return config;
   },
   (error) => Promise.reject(error)

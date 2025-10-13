@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAll } from "../../context/AllContext";
 import { backendUrl } from '../../services/base';
 import ProfilePicturePopup from "./profilePicturePopup/ProfilePicturePopup";
-
+import styles from './ProfilePicture.module.css';
 export default function Profile() {
     const { auth } = useAll();
     const [isProfilePicturePopup, setProfilePicturePopup] = useState(false);
@@ -53,7 +53,7 @@ export default function Profile() {
 
             {
                 isProfilePicturePopup &&
-                    <div ref={popupRef}>
+                    <div ref={popupRef} className={styles.PopUpCont}>
                         <ProfilePicturePopup onClose={() => setProfilePicturePopup(false)} />
                     </div>
             }

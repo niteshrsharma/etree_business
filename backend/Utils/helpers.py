@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import datetime, timedelta, timezone, date
+from typing import Optional, Dict, Any, List
 from jose import JWTError, jwt
 from typing import Any
 from fastapi import HTTPException
@@ -9,6 +9,7 @@ from backend.config import settings
 import secrets
 import re
 import string
+
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -54,3 +55,13 @@ def validate_password_format(Password: str):
     if not re.search(r'[!@#$%^&*(),.?\":{}|<>]', Password):
         raise ValueError("Must contain at least one special character")
     return Password
+
+
+allowed_user_field_types=["text", "mcq", "msq", "date", "number", "document"]
+
+allowed_validators_per_type_serializable = {
+    "text": {"min_length": "number", "max_length": "number"},
+    "number": {"min_value": "number", "max_value": "number"},
+    "date": {"min_date": "date", "max_date": "date"},
+    "document": {"allowed_extensions": "list[str]", "max_size_mb": "number"}
+}

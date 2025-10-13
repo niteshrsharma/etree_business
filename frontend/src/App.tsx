@@ -42,6 +42,8 @@ export default function App() {
     loader(auth.isLoading);
   }, [auth.isLoading, loader]);
 
+  if (auth.isLoading) return null;
+
   return (
     <BrowserRouter>
       {/* Navigation only when logged in */}
