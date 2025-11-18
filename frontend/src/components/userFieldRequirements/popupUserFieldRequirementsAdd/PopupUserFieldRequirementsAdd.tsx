@@ -248,12 +248,14 @@ export default function PopupUserFieldRequirementsAdd({ role, setAddFields, fiel
 
             field.Options.forEach((opt: any, idx: number) => {
                 const key = String.fromCharCode(97 + idx);
-                mapped[key] = opt.Label;
 
-                if (field.FieldType === "mcq" && opt.IsCorrect) {
+                mapped[key] = opt.label;  // ✔ FIXED
+
+                if (field.FieldType === "mcq" && opt.is_correct) {
                     answerSingle = key;
                 }
-                if (field.FieldType === "msq" && opt.IsCorrect) {
+
+                if (field.FieldType === "msq" && opt.is_correct) {
                     answerMulti.push(key);
                 }
             });
@@ -374,7 +376,7 @@ export default function PopupUserFieldRequirementsAdd({ role, setAddFields, fiel
                     min={0}
                 />
 
-                <button type="submit" className={styles.submitBtn}>Add Field</button>
+                <button type="submit" className={styles.submitBtn}>{fieldId ? 'Update' : 'Add Field'}</button>
             </form>
         </div>
     );

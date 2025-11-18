@@ -46,7 +46,7 @@ export default function UserFieldRequirements() {
           <PopupUserFieldRequirementsAdd
             role={selectedRole}
             setAddFields={setAddFields}
-            fieldId={editingFieldId ?? undefined}
+            fieldId={ editingFieldId ?? undefined}
           />
         </div>
       )}
@@ -72,7 +72,7 @@ export default function UserFieldRequirements() {
 
         <button
           className={styles.addButton}
-          onClick={() => setAddFields(!addFields)}
+          onClick={() => {setAddFields(!addFields); setEditingFieldId(null); }}
         >
           {addFields ? 'Cancel' : 'Add Field'}
         </button>
