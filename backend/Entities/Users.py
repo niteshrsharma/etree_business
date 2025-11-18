@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, Boolean
+from sqlalchemy import Column, String, TIMESTAMP, ForeignKey, Boolean, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import datetime
@@ -12,7 +12,7 @@ class Users(Base):
     FullName = Column(String(200), nullable=False)
     Email = Column(String(255), nullable=False, unique=True)
     Password = Column(String(255), nullable=False)
-    RoleId = Column(UUID(as_uuid=True), ForeignKey('Roles.Id'), nullable=False)
+    RoleId = Column(Integer, ForeignKey('Roles.Id'), nullable=False)
     ProfilePicture = Column(String(255), nullable=True)
     IsActive = Column(Boolean, nullable=False, default=True)
 
@@ -20,3 +20,8 @@ class Users(Base):
     UpdatedAt = Column(TIMESTAMP(timezone=True), default=datetime.datetime.now(datetime.UTC), onupdate=datetime.datetime.now(datetime.UTC))
 
     Role = relationship("Roles", backref="Users")
+    fields_data = relationship(
+        "UsersFieldData",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )

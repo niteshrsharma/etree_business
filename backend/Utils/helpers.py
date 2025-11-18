@@ -10,8 +10,6 @@ import secrets
 import re
 import string
 
-
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def generate_random_password(length: int = 12) -> str:

@@ -3,8 +3,9 @@ import { useAll } from "../../context/AllContext";
 import { backendUrl } from '../../services/base';
 import ProfilePicturePopup from "./profilePicturePopup/ProfilePicturePopup";
 import styles from './ProfilePicture.module.css';
+import UpdateUserData from "../updateUserData/UpdateUserData";
 export default function Profile() {
-    const { auth } = useAll();
+    const { auth, user } = useAll();
     const [isProfilePicturePopup, setProfilePicturePopup] = useState(false);
     const popupRef = useRef<HTMLDivElement>(null);
 
@@ -20,7 +21,7 @@ export default function Profile() {
         }
         function handleEscape(event: KeyboardEvent) {
             if (event.key === "Escape") {
-            setProfilePicturePopup(false);
+                setProfilePicturePopup(false);
             }
         }
         if (isProfilePicturePopup) {
@@ -53,9 +54,12 @@ export default function Profile() {
 
             {
                 isProfilePicturePopup &&
-                    <div ref={popupRef} className={styles.PopUpCont}>
-                        <ProfilePicturePopup onClose={() => setProfilePicturePopup(false)} />
-                    </div>
+                <div ref={popupRef} className={styles.PopUpCont}>
+                    <ProfilePicturePopup onClose={() => setProfilePicturePopup(false)} />
+                </div>
+            }
+            {
+                user.fields.length > 0 && <UpdateUserData />
             }
 
         </>

@@ -1,0 +1,84 @@
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.fieldBox {
+  background: #fff;
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docBox {
+  margin-top: 10px;
+}
+
+.docBtns {
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+}
+
+.btnBlue {
+  background: #2563eb;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.btnRed {
+  background: #dc2626;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.saveBtn {
+  margin-top: 12px;
+  background: #16a34a;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+}
+
+.notLogged {
+  color: red;
+  text-align: center;
+  padding: 40px;
+}

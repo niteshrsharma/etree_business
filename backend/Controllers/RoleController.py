@@ -21,6 +21,33 @@ def role_to_dict(role):
         "updated_at": role.UpdatedAt,
     }
 
+@router.get("/signup-roles", response_model=ResponseMessage)
+async def get_roles_for_signup():
+    roles = await roles_bal.get_roles_for_signup()
+    return ResponseMessage(status="success", message="Signup roles fetched", data=[role_to_dict(r) for r in roles])
+
+
+@router.get("/by-name/{name}", response_model=ResponseMessage)
+async def get_role_by_name(name: str, user=Depends(users_bal.is_user_authenticated())):
+    try:
+        role = await roles_bal.get_role_by_name(name)
+        return ResponseMessage(status="success", message="Role fetched", data=role_to_dict(role))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/{role_id}", response_model=ResponseMessage)
+async def get_role(role_id: int, user=Depends(users_bal.is_user_authenticated())):
+    try:
+        role = await roles_bal.get_role(role_id)
+        return ResponseMessage(status="success", message="Role fetched", data=role_to_dict(role))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/", response_model=ResponseMessage)
+async def get_all_roles(user=Depends(users_bal.is_user_authenticated())):
+    roles = await roles_bal.get_all_roles()
+    return ResponseMessage(status="success", message="Roles fetched", data=[role_to_dict(r) for r in roles])
+
 
 @router.post("/", response_model=ResponseMessage)
 async def create_role(
@@ -32,30 +59,6 @@ async def create_role(
         return ResponseMessage(status="success", message="Role created", data=role_to_dict(role))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.get("/by-name/{name}", response_model=ResponseMessage)
-async def get_role_by_name(name: str, user=Depends(users_bal.is_user_authenticated())):
-    try:
-        role = await roles_bal.get_role_by_name(name)
-        return ResponseMessage(status="success", message="Role fetched", data=role_to_dict(role))
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-
-
-@router.get("/{role_id}", response_model=ResponseMessage)
-async def get_role(role_id: int, user=Depends(users_bal.is_user_authenticated())):
-    try:
-        role = await roles_bal.get_role(role_id)
-        return ResponseMessage(status="success", message="Role fetched", data=role_to_dict(role))
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-
-
-@router.get("/", response_model=ResponseMessage)
-async def get_all_roles(user=Depends(users_bal.is_user_authenticated())):
-    roles = await roles_bal.get_all_roles()
-    return ResponseMessage(status="success", message="Roles fetched", data=[role_to_dict(r) for r in roles])
 
 
 @router.put("/{role_id}", response_model=ResponseMessage)
@@ -81,7 +84,3 @@ async def delete_role(role_id: int, user=Depends(users_bal.is_valid_user('Super 
             status_code=400,
             content={"status": "failed", "message": str(e)}
         )
-@router.get("/signup-roles", response_model=ResponseMessage)
-async def get_roles_for_signup():
-    roles = await roles_bal.get_roles_for_signup()
-    return ResponseMessage(status="success", message="Signup roles fetched", data=[role_to_dict(r) for r in roles])

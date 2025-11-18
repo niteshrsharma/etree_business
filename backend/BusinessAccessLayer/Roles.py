@@ -1,8 +1,10 @@
 from backend.DatabaseAccessLayer.Roles import RolesDAL
+from backend.DatabaseAccessLayer.RequiredFieldsForUsers import RequiredFieldsForUsersDAL
 
 class RolesBAL:
     def __init__(self):
         self.roles_dal = RolesDAL()
+        self.required_fields_for_users_dal=RequiredFieldsForUsersDAL()
 
     async def create_role(self, name: str, description: str = None, registration_allowed: bool = False):
         if not name or len(name.strip()) == 0:
@@ -35,6 +37,12 @@ class RolesBAL:
         return updated_role
 
     async def delete_role(self, role_id: int):
+        fields = await self.required_fields_for_users_dal.get_fields_by_role(role_id)
+        if fields:  # list is non-empty
+            raise ValueError(
+                f"Cannot delete role: {len(fields)} field(s) reference this role."
+            )
+
         deleted = await self.roles_dal.delete_role(role_id)
         if not deleted:
             raise ValueError("Cannot delete role because it either has users assigned or does not exist")

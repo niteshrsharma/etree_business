@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from backend.DatabaseAccessLayer.RequiredFieldsForUsers import RequiredFieldsForUsersDAL
 from backend.Schemas.ResponseMessage import ResponseMessage
 from backend.Entities.RequiredFieldsForUsers import RequiredFieldsForUsers
+from datetime import datetime
 
 class RequiredFieldsForUsersBAL:
     def __init__(self):
@@ -95,6 +96,9 @@ class RequiredFieldsForUsersBAL:
         if options is not None:
             field.Options = options
         if validation is not None:
+            for key, val in validation.items():
+                if isinstance(val, datetime):
+                    validation[key] = val.isoformat()
             field.Validation = validation
         if display_order is not None:
             field.DisplayOrder = display_order

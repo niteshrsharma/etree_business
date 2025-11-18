@@ -1,4 +1,3 @@
-import asyncio
 import string
 from io import BytesIO
 from PIL import Image

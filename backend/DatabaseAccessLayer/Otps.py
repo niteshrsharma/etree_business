@@ -2,12 +2,13 @@ import datetime
 from backend.Entities.Otps import Otps
 from backend.DatabaseAccessLayer.Base import BaseDAL
 from sqlalchemy import select
+from uuid import UUID
 
 class OtpsDAL(BaseDAL):
     def __init__(self):
         super().__init__(Otps)
 
-    async def create_otp(self, user_id: str, code: str, expires_in_minutes: int = 10):
+    async def create_otp(self, user_id: UUID, code: str, expires_in_minutes: int = 10):
         expires_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=expires_in_minutes)
         otp = Otps(UserId=user_id, Code=code, ExpiresAt=expires_at)
         return await self.add(otp)  # BaseDAL helper

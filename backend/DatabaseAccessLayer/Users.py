@@ -3,6 +3,7 @@ from backend.Entities.Roles import Roles
 from backend.DatabaseAccessLayer.Base import BaseDAL
 from sqlalchemy.orm import joinedload
 from sqlalchemy import select
+from uuid import UUID
 
 class UsersDAL(BaseDAL):
     def __init__(self):
@@ -28,7 +29,7 @@ class UsersDAL(BaseDAL):
         )
         return await self.add(new_user)  # BaseDAL helper
 
-    async def get_user_by_id(self, user_id: int, active: bool = None):
+    async def get_user_by_id(self, user_id: UUID, active: bool = None):
         user = await self.get_by_id(user_id)  # BaseDAL helper
         if user and active is not None and user.IsActive != active:
             return None
@@ -49,7 +50,7 @@ class UsersDAL(BaseDAL):
             users = [u for u in users if u.IsActive == active]
         return users
 
-    async def update_user(self, user_id: int, full_name: str = None, email: str = None,
+    async def update_user(self, user_id: UUID, full_name: str = None, email: str = None,
                           password: str = None, role_id: int = None, profile_picture: str = None):
         user = await self.get_by_id(user_id)
         if not user:
@@ -76,14 +77,14 @@ class UsersDAL(BaseDAL):
 
         return await self.update(user)  # BaseDAL helper
 
-    async def delete_user(self, user_id: int):
+    async def delete_user(self, user_id: UUID):
         user = await self.get_by_id(user_id)
         if not user:
             return False
         await self.delete(user)  # BaseDAL helper
         return True
 
-    async def get_user_with_role(self, user_id: int, active: bool = None):
+    async def get_user_with_role(self, user_id: UUID, active: bool = None):
         stmt = select(Users).options(joinedload(Users.Role)).where(Users.Id == user_id)
         async with self.session_scope() as session:
             result = await session.execute(stmt)

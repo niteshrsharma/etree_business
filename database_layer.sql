@@ -86,7 +86,6 @@ CREATE TABLE "UsersFieldData" (
     "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
     "UpdatedAt" TIMESTAMPTZ
 );
-
 CREATE TRIGGER trg_required_fields_data_set_timestamps
 BEFORE INSERT OR UPDATE ON "UsersFieldData"
 FOR EACH ROW
@@ -124,3 +123,18 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- this one looks og need to implement it for our own use:
+
+-- CREATE TABLE country_data (
+--     id SERIAL PRIMARY KEY,
+--     country TEXT,
+--     data JSONB
+-- );
+
+-- INSERT INTO country_data (country, data) VALUES
+-- ('India', '{
+--     "Tamil Nadu": ["Chennai", "Coimbatore"],
+--     "Kerala": ["Kochi"]
+-- }');

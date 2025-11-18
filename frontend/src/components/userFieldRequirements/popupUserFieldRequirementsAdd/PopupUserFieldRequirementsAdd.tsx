@@ -4,7 +4,7 @@ import { CgClose } from 'react-icons/cg';
 import { useAll } from "../../../context/AllContext";
 import { useEffect, useState } from 'react';
 import { AiOutlinePlus, AiOutlineDelete } from 'react-icons/ai';
-import type { FieldCreateInput } from '../../../services/users';
+import type { FieldCreateInput, FieldUpdateInput } from '../../../services/users';
 
 interface Props {
     role: Role | null;
@@ -18,13 +18,15 @@ interface ValidatorInput {
     value: any;
 }
 
-export default function PopupUserFieldRequirementsAdd({ role, setAddFields }: Props) {
+export default function PopupUserFieldRequirementsAdd({ role, setAddFields, fieldId }: Props) {
     const { roles, requiredFieldsForUser } = useAll();
 
     const [fieldTypes, setFieldTypes] = useState<string[]>([]);
     const [selectedField, setSelectedField] = useState<string>('');
     const [validators, setValidators] = useState<Record<string, string>>({});
     const [selectedValidators, setSelectedValidators] = useState<ValidatorInput[]>([]);
+    const [fieldName, setFieldName] = useState("");
+
 
     const [options, setOptions] = useState<Record<string, string>>({});
     const [answer, setAnswer] = useState<string | null>(null); // MCQ
@@ -34,6 +36,7 @@ export default function PopupUserFieldRequirementsAdd({ role, setAddFields }: Pr
     const [filledBy, setFilledBy] = useState<string>('');
     const [editedBy, setEditedBy] = useState<string>('');
     const [displayOrder, setDisplayOrder] = useState<number>(0);
+
 
     const isMCQorMSQ = selectedField === 'mcq' || selectedField === 'msq';
 
@@ -125,9 +128,11 @@ export default function PopupUserFieldRequirementsAdd({ role, setAddFields }: Pr
         e.preventDefault();
         if (!role) return;
 
-        const payload: FieldCreateInput = {
-            role_id: role.id,
-            field_name: (e.currentTarget[0] as HTMLInputElement).value.trim(),
+        // -------------------------------
+        // SHARED PAYLOAD (base structure)
+        // -------------------------------
+        const basePayload = {
+            field_name: fieldName.trim(),
             field_type: selectedField,
             is_required: isRequired,
             filled_by_role_id: filledBy ? Number(filledBy) : undefined,
@@ -136,39 +141,140 @@ export default function PopupUserFieldRequirementsAdd({ role, setAddFields }: Pr
             is_active: true,
         };
 
-        // --- Updated MCQ/MSQ Handling ---
+        // -------------------------------
+        // OPTIONS (MCQ/MSQ)
+        // -------------------------------
+        let optionsPayload;
         if (isMCQorMSQ) {
-            payload.options = Object.entries(options).map(([key, label]) => ({
+            optionsPayload = Object.entries(options).map(([key, label]) => ({
                 label,
                 is_correct:
-                    selectedField === 'mcq'
+                    selectedField === "mcq"
                         ? answer === key
                         : answers.includes(key)
-                        ? true
-                        : null,
+                            ? true
+                            : null,
             }));
         }
 
-        // --- Validators handling ---
+        // -------------------------------
+        // VALIDATION
+        // -------------------------------
+        let validationPayload: Record<string, any> | undefined = undefined;
         if (selectedValidators.length > 0) {
-            payload.validation = payload.validation || {};
+            validationPayload = {};
             const numericValidators = ['min_length', 'max_length', 'min_value', 'max_value'];
-            selectedValidators.forEach(v => {
+
+            selectedValidators.forEach((v) => {
                 if (numericValidators.includes(v.name)) {
-                    payload.validation![v.name] = Number(v.value);
+                    validationPayload![v.name] = Number(v.value);
+                } else if (v.name === "allowed_extensions") {
+                    validationPayload![v.name] = Array.from(
+                        new Set(
+                            v.value
+                                .split(",")
+                                .map((ext: string) => ext.trim())
+                                .filter(Boolean)
+                        )
+                    );
+                } else if (v.name === "max_size_mb") {
+                    validationPayload![v.name] = parseInt(v.value, 10);
                 } else {
-                    payload.validation![v.name] = v.value;
+                    validationPayload![v.name] = v.value;
                 }
             });
         }
 
+        // -------------------------------
+        // UPDATE MODE
+        // -------------------------------
+        if (fieldId) {
+            const updatePayload: FieldUpdateInput = {
+                ...basePayload,
+                options: optionsPayload,
+                validation: validationPayload,
+            };
+
+            try {
+                await requiredFieldsForUser.updateField(fieldId, updatePayload);
+                setAddFields(false);
+                requiredFieldsForUser.getFieldsByRole(role.id);
+            } catch (err) {
+                console.error("Failed to update field:", err);
+            }
+            return; // ⬅ STOP HERE (do not run create mode)
+        }
+
+        // -------------------------------
+        // CREATE MODE
+        // -------------------------------
+        const createPayload: FieldCreateInput = {
+            ...basePayload,
+            role_id: role.id,
+            options: optionsPayload,
+            validation: validationPayload,
+        };
+
         try {
-            await requiredFieldsForUser.createField(payload);
+            await requiredFieldsForUser.createField(createPayload);
             setAddFields(false);
-        } catch (err: any) {
+            requiredFieldsForUser.getFieldsByRole(role.id);
+        } catch (err) {
             console.error("Failed to create field:", err);
         }
     };
+
+
+    useEffect(() => {
+        if (!fieldId) return;
+
+        // get existing field details
+        const field = requiredFieldsForUser.fields.find(f => f.Id === fieldId);
+        if (!field) return;
+
+        // prefill inputs
+        setFieldName(field.FieldName);
+        setSelectedField(field.FieldType);
+        setIsRequired(field.IsRequired);
+        setFilledBy(field.FilledByRoleId?.toString() || '');
+        setEditedBy(field.EditableByRoleId?.toString() || '');
+        setDisplayOrder(field.DisplayOrder || 0);
+
+        // If MCQ/MSQ → map options
+        if (field.Options) {
+            let mapped: Record<string, string> = {};
+            let answerSingle: string | null = null;
+            let answerMulti: string[] = [];
+
+            field.Options.forEach((opt: any, idx: number) => {
+                const key = String.fromCharCode(97 + idx);
+                mapped[key] = opt.Label;
+
+                if (field.FieldType === "mcq" && opt.IsCorrect) {
+                    answerSingle = key;
+                }
+                if (field.FieldType === "msq" && opt.IsCorrect) {
+                    answerMulti.push(key);
+                }
+            });
+
+            setOptions(mapped);
+            setAnswer(answerSingle);
+            setAnswers(answerMulti);
+        }
+
+        // validators
+        if (field.Validation) {
+            const vals = Object.entries(field.Validation).map(([name, value]) => ({
+                name,
+                type: validators[name] || 'text',
+                value
+            }));
+            setSelectedValidators(vals);
+        }
+
+    }, [fieldId, validators]);
+
 
     return (
         <div className={styles.popupCont}>
@@ -176,7 +282,7 @@ export default function PopupUserFieldRequirementsAdd({ role, setAddFields }: Pr
             <h3 className={styles.title}>{role?.name}</h3>
 
             <form className={styles.form} onSubmit={handleSubmit}>
-                <input type="text" placeholder="Field name" className={styles.input} />
+                <input type="text" placeholder="Field name" className={styles.input} required value={fieldName} onChange={(e) => setFieldName(e.target.value)} />
 
                 <select value={selectedField} onChange={e => setSelectedField(e.target.value)} className={styles.select}>
                     <option value="" disabled>Select field type</option>

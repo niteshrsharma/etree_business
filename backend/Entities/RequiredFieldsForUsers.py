@@ -48,3 +48,9 @@ class RequiredFieldsForUsers(Base):
     Role = relationship("Roles", foreign_keys=[RoleId], backref="RequiredFieldsForUsers")
     FilledByRole = relationship("Roles", foreign_keys=[FilledByRoleId])
     EditableByRole = relationship("Roles", foreign_keys=[EditableByRoleId])
+    user_values = relationship(
+        "UsersFieldData",
+        back_populates="required_field",
+        cascade="all, delete-orphan"
+    )
+

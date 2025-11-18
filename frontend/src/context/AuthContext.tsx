@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import { AuthService } from "../services/users";
-import type { User } from "../services/users";
+import type { CreateUser, User } from "../services/users";
 import { roleService } from "../services/roles";
 import type { Role } from "../services/roles";
 import { toast } from "react-hot-toast";
@@ -12,6 +12,7 @@ interface AuthContextType {
   roles: Role[];
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  signup: (user: CreateUser) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -64,6 +65,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signup = async (userData: CreateUser) => {
+    setIsLoading(true);
+    try {
+      const res = await AuthService.signup(userData);
+
+      if (res.status === "success") {
+        toast.success("Account created successfully!");
+
+        // After signup, automatically log the user in (optional but common)
+        await login(userData.email, userData.password);
+      } else {
+        throw new Error(res.message);
+      }
+    } catch (err: any) {
+      // Handle backend-style error structure
+      if (err?.response?.data?.detail?.message) {
+        toast.error(err.response.data.detail.message);
+      } else if (err.message) {
+        toast.error(err.message);
+      } else {
+        toast.error("Signup failed. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const logout = async () => {
     setIsLoading(true);
     try {
@@ -103,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const value = useMemo(
-    () => ({ user, roles, isLoading,setIsLoading, login, logout, refreshUser, updateProfilePicture }),
+    () => ({ user, roles, signup, isLoading,setIsLoading, login, logout, refreshUser, updateProfilePicture }),
     [user, roles, isLoading]
   );
 

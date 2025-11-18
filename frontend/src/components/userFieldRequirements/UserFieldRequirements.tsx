@@ -8,7 +8,10 @@ export default function UserFieldRequirements() {
   const { roles, requiredFieldsForUser } = useAll();
   const [selectedRole, setSelectedRole] = useState<Role | null>(roles.roles[0] || null);
   const [addFields, setAddFields] = useState(false);
+  const [editingFieldId, setEditingFieldId] = useState<number | null>(null);
+
   const popupRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (selectedRole) {
@@ -43,9 +46,11 @@ export default function UserFieldRequirements() {
           <PopupUserFieldRequirementsAdd
             role={selectedRole}
             setAddFields={setAddFields}
+            fieldId={editingFieldId ?? undefined}
           />
         </div>
       )}
+
 
       <div className={styles.controls}>
         <select
@@ -96,7 +101,15 @@ export default function UserFieldRequirements() {
               <td>{roles.roles.find(r => r.id === field.FilledByRoleId)?.name || "-"}</td>
               <td>{roles.roles.find(r => r.id === field.EditableByRoleId)?.name || "-"}</td>
               <td>
-                <button className={styles.editBtn}>Edit</button>
+                <button
+                  className={styles.editBtn}
+                  onClick={() => {
+                    setEditingFieldId(field.Id);
+                    setAddFields(true);
+                  }}
+                >
+                  Edit
+                </button>
               </td>
               <td>
                 <button

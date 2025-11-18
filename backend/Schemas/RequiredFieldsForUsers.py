@@ -58,6 +58,12 @@ class FieldCreateSchema(BaseModel):
 
         # --- Validation Key Type Check ---
         allowed_keys = allowed_validators_per_type_serializable.get(field_type, {})
+
+        if field_type == "document":
+            missing_keys = [k for k in allowed_keys if k not in validation]
+            if missing_keys:
+                raise ValueError(f"All validation keys are required for 'document'. Missing: {missing_keys}")
+        
         for key, val in validation.items():
             if key not in allowed_keys:
                 raise ValueError(f"Validation key '{key}' is not allowed for field type '{field_type}'")
@@ -73,7 +79,13 @@ class FieldCreateSchema(BaseModel):
                 if not isinstance(val, (int, float)):
                     raise ValueError(f"Validation key '{key}' must be a number for '{field_type}'")
             elif expected_type == "date":
-                if not isinstance(val, datetime):
+                if isinstance(val, str):
+                    try:
+                        val = datetime.fromisoformat(val)
+                        validation[key] = val
+                    except Exception:
+                        raise ValueError(f"Validation key '{key}' must be a datetime for '{field_type}'")
+                elif not isinstance(val, datetime):
                     raise ValueError(f"Validation key '{key}' must be a datetime for '{field_type}'")
 
         return values
@@ -117,6 +129,12 @@ class FieldUpdateSchema(BaseModel):
 
         # --- Validation Key Type Check ---
         allowed_keys = allowed_validators_per_type_serializable.get(field_type, {})
+
+        if field_type == "document" and validation is not None:
+            missing_keys = [k for k in allowed_keys if k not in validation]
+            if missing_keys:
+                raise ValueError(f"All validation keys are required for 'document'. Missing: {missing_keys}")
+        
         for key, val in validation.items():
             if key not in allowed_keys:
                 raise ValueError(f"Validation key '{key}' is not allowed for field type '{field_type}'")
@@ -132,7 +150,13 @@ class FieldUpdateSchema(BaseModel):
                 if not isinstance(val, (int, float)):
                     raise ValueError(f"Validation key '{key}' must be a number for '{field_type}'")
             elif expected_type == "date":
-                if not isinstance(val, datetime):
+                if isinstance(val, str):
+                    try:
+                        val = datetime.fromisoformat(val)
+                        validation[key] = val
+                    except Exception:
+                        raise ValueError(f"Validation key '{key}' must be a datetime for '{field_type}'")
+                elif not isinstance(val, datetime):
                     raise ValueError(f"Validation key '{key}' must be a datetime for '{field_type}'")
 
         return values

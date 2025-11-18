@@ -1,6 +1,7 @@
 from backend.Entities.RequiredFieldsForUsers import RequiredFieldsForUsers
 from backend.DatabaseAccessLayer.Base import BaseDAL
 from sqlalchemy import select, and_
+from datetime import datetime
 
 class RequiredFieldsForUsersDAL(BaseDAL):
     def __init__(self):
@@ -22,6 +23,11 @@ class RequiredFieldsForUsersDAL(BaseDAL):
         existing_field = await self.get_field_by_name(role_id, field_name)
         if existing_field:
             return None
+
+        if validation:
+            for key, val in validation.items():
+                if isinstance(val, datetime):
+                    validation[key] = val.isoformat()
 
         new_field = RequiredFieldsForUsers(
             RoleId=role_id,

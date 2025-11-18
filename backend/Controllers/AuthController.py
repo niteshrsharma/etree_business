@@ -1,11 +1,69 @@
 # backend/Controllers/AuthController.py
 from fastapi import APIRouter, Depends, Response , UploadFile , HTTPException
 from backend.BusinessAccessLayer.Users import UsersBAL
+from backend.BusinessAccessLayer.Roles import RolesBAL
 from backend.Schemas.ResponseMessage import ResponseMessage
-from backend.Schemas.Users import LoginUserModel
+from backend.Schemas.Users import LoginUserModel, CreateUserModel
 
 router = APIRouter()
 users_bal = UsersBAL()
+roles_bal=RolesBAL()
+
+from fastapi import HTTPException
+
+@router.post("/signup", response_model=ResponseMessage)
+async def signup(response: Response, signup_data: CreateUserModel):
+    try:
+        # Fetch roles allowed for signup
+        roles_for_signup = await roles_bal.get_roles_for_signup()
+        allowed_role_ids = {r.Id for r in roles_for_signup}
+
+        # Validate role
+        if signup_data.role_id not in allowed_role_ids:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "status": "error",
+                    "message": "Given role does not have permission to signup",
+                    "data": None
+                }
+            )
+
+        # Attempt to create user
+        result = await users_bal.create_user(
+            signup_data.full_name,
+            signup_data.email,
+            signup_data.password,
+            signup_data.role_id
+        )
+
+        return result
+
+    except ValueError as e:
+        # For custom backend validation errors like password rules
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": "error",
+                "message": str(e),
+                "data": None
+            }
+        )
+
+    except HTTPException:
+        # Re-raise HTTPExceptions (like role permission error above)
+        raise
+
+    except Exception as e:
+        # Catch-all fallback
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "status": "error",
+                "message": "An unexpected error occurred",
+                "data": str(e)
+            }
+        )
 
 
 @router.post("/login", response_model=ResponseMessage)

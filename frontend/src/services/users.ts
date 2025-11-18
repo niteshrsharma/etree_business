@@ -11,8 +11,113 @@ export interface User {
   profile_picture?: string | null;
 }
 
+export interface CreateUser {
+  full_name: string,
+  email: string,
+  password: string,
+  role_id: number
+}
+
+export interface UserFieldResponse {
+  field_id: number;
+  field_name: string;
+  field_type: string;
+  is_required: boolean;
+  filled: boolean;
+  value: any;
+  options?: any;
+  validation?: any;
+}
+
+export interface UserFieldValueInput {
+  value: any;
+}
+
+export const UserService = {
+  /**
+   * Fetch all required user fields + filled values
+   */
+  getMyFields: async (
+    target_user_id?: string
+  ): Promise<ResponseMessage<UserFieldResponse[]>> => {
+    const res = await api.get("/user/me/fields", {
+      params: target_user_id ? { target_user_id } : {},
+    });
+    return res.data;
+  },
+
+  /**
+   * Update non-document fields (text, number, date, mcq, msq)
+   */
+  updateMyField: async (
+    fieldId: number,
+    value: any,
+    target_user_id?: string
+  ): Promise<ResponseMessage> => {
+    const payload: UserFieldValueInput = { value };
+
+    const res = await api.post(`/user/me/fields/${fieldId}`, payload, {
+      params: target_user_id ? { target_user_id } : {},
+    });
+
+    return res.data;
+  },
+
+  /**
+   * Upload document field
+   */
+  uploadFieldDocument: async (
+    fieldId: number,
+    file: File,
+    target_user_id?: string
+  ): Promise<ResponseMessage> => {
+    const form = new FormData();
+    form.append("file", file);
+
+    const res = await api.post(`/user/me/fields/${fieldId}/upload`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+      params: target_user_id ? { target_user_id } : {},
+    });
+
+    return res.data;
+  },
+
+  /**
+   * Download protected document
+   */
+  downloadFieldDocument: async (
+    fieldId: number,
+    target_user_id?: string
+  ): Promise<Blob> => {
+    const res = await api.get(`/user/me/fields/${fieldId}/download`, {
+      responseType: "blob",
+      params: target_user_id ? { target_user_id } : {},
+    });
+
+    return res.data;
+  },
+
+  /**
+   * Delete protected document
+   */
+  deleteFieldDocument: async (
+    fieldId: number,
+    target_user_id?: string
+  ): Promise<ResponseMessage> => {
+    const res = await api.delete(`/user/me/fields/${fieldId}/file`, {
+      params: target_user_id ? { target_user_id } : {},
+    });
+
+    return res.data;
+  },
+};
 // AuthService object
 export const AuthService = {
+  signup: async (user: CreateUser) => {
+    const res = await api.post("/auth/signup", user);
+    return res.data;
+  },
+
   login: async (email: string, password: string): Promise<ResponseMessage> => {
     const res = await api.post("/auth/login", { email, password });
     return res.data;
