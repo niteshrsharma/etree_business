@@ -9,7 +9,11 @@ interface FieldOption {
   value?: string;
 }
 
-export default function UpdateUserData() {
+interface UpdateUserDataProps {
+  user?: { user_id: string; full_name?: string };
+}
+
+export default function UpdateUserData({ user }: UpdateUserDataProps) {
   const { user: userContext } = useAll();
   const {
     fields,
@@ -21,15 +25,16 @@ export default function UpdateUserData() {
   } = userContext;
 
   const showLoader = useLoader();
-
   const [localValues, setLocalValues] = useState<Record<number, any>>({});
 
-  /** Load fields on mount */
+  const targetId = user?.user_id; // The ID we will target
+
+  /** Load fields for the correct user */
   useEffect(() => {
     const init = async () => {
       showLoader(true);
       try {
-        await loadFields();
+        await loadFields(targetId); // 👈 load specific user or logged-in user
       } catch {
         toast.error("Failed to load user data");
       } finally {
@@ -37,7 +42,7 @@ export default function UpdateUserData() {
       }
     };
     init();
-  }, []);
+  }, [targetId]);
 
   /** Sync values once fields arrive */
   useEffect(() => {
@@ -55,7 +60,7 @@ export default function UpdateUserData() {
   const handleSave = async (fieldId: number) => {
     showLoader(true);
     try {
-      await updateField(fieldId, localValues[fieldId]);
+      await updateField(fieldId, localValues[fieldId], targetId); // 👈 pass target user id
     } finally {
       showLoader(false);
     }
@@ -65,7 +70,7 @@ export default function UpdateUserData() {
   const handleUpload = async (fieldId: number, file: File) => {
     showLoader(true);
     try {
-      await uploadDocument(fieldId, file);
+      await uploadDocument(fieldId, file, targetId); // 👈 pass target user id
     } finally {
       showLoader(false);
     }
@@ -73,7 +78,9 @@ export default function UpdateUserData() {
 
   return (
     <>
-      <h1 className={styles.title}>Update Your Information</h1>
+      <h1 className={styles.title}>
+        {user ? `Editing: ${user.full_name}` : "Update Your Information"}
+      </h1>
 
       <div className={styles.container}>
         {fields.map((field) => (
@@ -116,44 +123,42 @@ export default function UpdateUserData() {
             {/* MSQ */}
             {field.field_type === "msq" && (
               <div className={styles.checkboxGroup}>
-                {(field.options ?? []).map(
-                  (opt: FieldOption, i: number) => {
-                    const isChecked = Array.isArray(
-                      localValues[field.field_id]
-                    )
-                      ? localValues[field.field_id].includes(opt.label)
-                      : false;
+                {(field.options ?? []).map((opt: FieldOption, i: number) => {
+                  const isChecked = Array.isArray(
+                    localValues[field.field_id]
+                  )
+                    ? localValues[field.field_id].includes(opt.label)
+                    : false;
 
-                    return (
-                      <label key={i} className={styles.checkboxItem}>
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => {
-                            const prev = Array.isArray(
-                              localValues[field.field_id]
-                            )
-                              ? localValues[field.field_id]
-                              : [];
+                  return (
+                    <label key={i} className={styles.checkboxItem}>
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const prev = Array.isArray(
+                            localValues[field.field_id]
+                          )
+                            ? localValues[field.field_id]
+                            : [];
 
-                            const updated = e.target.checked
-                              ? [...prev, opt.label]
-                              : prev.filter(
+                          const updated = e.target.checked
+                            ? [...prev, opt.label]
+                            : prev.filter(
                                 (v: string) => v !== opt.label
                               );
 
-                            handleChange(field.field_id, updated);
-                          }}
-                        />
-                        {opt.label}
-                      </label>
-                    );
-                  }
-                )}
+                          handleChange(field.field_id, updated);
+                        }}
+                      />
+                      {opt.label}
+                    </label>
+                  );
+                })}
               </div>
             )}
 
-            {/* DOCUMENT */}
+            {/* DOCUMENT FIELD */}
             {field.field_type === "document" && (
               <div className={styles.docBox}>
                 <input
@@ -171,7 +176,7 @@ export default function UpdateUserData() {
                       type="button"
                       className={styles.btnBlue}
                       onClick={() =>
-                        downloadDocument(field.field_id)
+                        downloadDocument(field.field_id, targetId)
                       }
                     >
                       Download
@@ -181,7 +186,7 @@ export default function UpdateUserData() {
                       type="button"
                       className={styles.btnRed}
                       onClick={() =>
-                        deleteDocument(field.field_id)
+                        deleteDocument(field.field_id, targetId)
                       }
                     >
                       Delete
@@ -191,7 +196,7 @@ export default function UpdateUserData() {
               </div>
             )}
 
-            {/* SAVE BUTTON for non-document fields */}
+            {/* SAVE BUTTON */}
             {field.field_type !== "document" && (
               <button
                 type="button"

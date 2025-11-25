@@ -17,6 +17,7 @@ def role_to_dict(role):
         "name": role.Name,
         "description": role.Description,
         "registration_allowed": role.RegistrationAllowed,
+        "registration_by_roles": role.RegistrationByRoles,
         "created_at": role.CreatedAt,
         "updated_at": role.UpdatedAt,
     }
@@ -26,6 +27,20 @@ async def get_roles_for_signup():
     roles = await roles_bal.get_roles_for_signup()
     return ResponseMessage(status="success", message="Signup roles fetched", data=[role_to_dict(r) for r in roles])
 
+@router.get("/creatable", response_model=ResponseMessage)
+async def get_roles_actor_can_create(
+    actor=Depends(users_bal.is_user_authenticated())
+):
+    """
+    Returns all roles the actor is allowed to create.
+    """
+    allowed_roles = await roles_bal.get_roles_actor_can_create(actor.RoleId)
+
+    return ResponseMessage(
+        status="success",
+        message="Creatable roles fetched",
+        data=[role_to_dict(r) for r in allowed_roles]
+    )
 
 @router.get("/by-name/{name}", response_model=ResponseMessage)
 async def get_role_by_name(name: str, user=Depends(users_bal.is_user_authenticated())):
@@ -49,13 +64,28 @@ async def get_all_roles(user=Depends(users_bal.is_user_authenticated())):
     return ResponseMessage(status="success", message="Roles fetched", data=[role_to_dict(r) for r in roles])
 
 
+@router.get("/creatable", response_model=ResponseMessage)
+async def get_roles_actor_can_create(
+    actor=Depends(users_bal.is_user_authenticated())
+):
+    """
+    Returns all roles the actor is allowed to create.
+    """
+    allowed_roles = await roles_bal.get_roles_actor_can_create(actor.RoleId)
+
+    return ResponseMessage(
+        status="success",
+        message="Creatable roles fetched",
+        data=[role_to_dict(r) for r in allowed_roles]
+    )
+    
 @router.post("/", response_model=ResponseMessage)
 async def create_role(
     role: RoleRequest,
     user=Depends(users_bal.is_valid_user('Super User', 'Admin'))
 ):
     try:
-        role = await roles_bal.create_role(role.name, role.description, role.registration_allowed)
+        role = await roles_bal.create_role(role.name, role.description, role.registration_allowed, registration_by_roles=role.registration_by_roles)
         return ResponseMessage(status="success", message="Role created", data=role_to_dict(role))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -68,7 +98,7 @@ async def update_role(
     user=Depends(users_bal.is_valid_user('Super User', 'Admin'))
 ):
     try:
-        updated_role = await roles_bal.update_role(role_id, role.name, role.description, role.registration_allowed)
+        updated_role = await roles_bal.update_role(role_id, role.name, role.description, role.registration_allowed, registration_by_roles=role.registration_by_roles)
         return ResponseMessage(status="success", message="Role updated", data=role_to_dict(updated_role))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

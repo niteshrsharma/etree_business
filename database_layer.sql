@@ -6,9 +6,13 @@ CREATE TABLE "Roles" (
     "Name" VARCHAR(50) NOT NULL UNIQUE,
     "Description" TEXT,
     "RegistrationAllowed" BOOLEAN NOT NULL DEFAULT FALSE,
+    "RegistrationByRoles" INT[] DEFAULT '{}'::INT[],
     "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
     "UpdatedAt" TIMESTAMPTZ
 );
+
+CREATE INDEX idx_roles_registrationbyroles
+ON "Roles" USING GIN ("RegistrationByRoles");
 
 INSERT INTO "Roles" ("Name", "Description")
 VALUES

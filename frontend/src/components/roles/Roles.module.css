@@ -7,8 +7,23 @@
   box-sizing: border-box;
   flex-wrap: wrap; /* wrap on small screens */
 }
+.rolesSelection{
+  position: relative;
+}
 
-.formCont div {
+.registrationAllowed{
+  border: 1px solid black;
+  padding: 4px;
+  border-radius: 0.5rem;
+  margin: 2px;
+  position: absolute;
+  top: 100%;
+  background-color: azure;
+  display: flex;
+  flex-direction: column;
+}
+
+.formCont>div {
   display: flex;
   align-items: center;
   gap: 0.5rem;

@@ -34,6 +34,22 @@ export interface UserFieldValueInput {
 }
 
 export const UserService = {
+  createUser: async (payload: {
+    full_name: string;
+    email: string;
+    password: string;
+    role_id: number;
+  }): Promise<ResponseMessage> => {
+    const res = await api.post("/user/create-user", payload);
+    return res.data;
+  },
+
+  getUsersByRole: async (
+    role_id: number
+  ): Promise<ResponseMessage<any[]>> => {
+    const res = await api.get(`/user/by-role/${role_id}`);
+    return res.data;
+  },
   /**
    * Fetch all required user fields + filled values
    */

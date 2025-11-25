@@ -11,8 +11,20 @@ interface RolesContextType {
   setIsLoading: (loading: boolean) => void;
   refreshRoles: () => Promise<void>;
   getSignupRoles: () => Promise<Role[]>;
-  createRole: (name: string, description?: string, registration_allowed?: boolean) => Promise<Role | null>;
-  updateRole: (roleId: number, name?: string, description?: string, registration_allowed?: boolean) => Promise<Role | null>;
+  getCreatableRoles: () => Promise<Role[]>; 
+  createRole: (
+    name: string,
+    description?: string,
+    registration_allowed?: boolean,
+    registration_by_roles?: number[]
+  ) => Promise<Role | null>;
+  updateRole: (
+    roleId: number,
+    name?: string,
+    description?: string,
+    registration_allowed?: boolean,
+    registration_by_roles?: number[]
+  ) => Promise<Role | null>;
   deleteRole: (roleId: number) => Promise<boolean>;
 }
 
@@ -22,7 +34,7 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Stable function to refresh all roles
+  // Load all roles
   const refreshRoles = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -35,12 +47,12 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Fetch roles on mount
+  // Load on mount
   useEffect(() => {
     refreshRoles();
   }, [refreshRoles]);
 
-  // Stable function to get signup roles
+  // Fetch signup-allowed roles
   const getSignupRoles = useCallback(async (): Promise<Role[]> => {
     try {
       return await roleService.getRolesForSignup();
@@ -50,41 +62,75 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Stable function to create a role
+  // ⭐ Fetch creatable roles (based on actor permissions)
+  const getCreatableRoles = useCallback(async (): Promise<Role[]> => {
+    try {
+      return await roleService.getCreatableRoles();
+    } catch (error) {
+      console.error("Creatable roles fetch error:", error);
+      return [];
+    }
+  }, []);
+
+  // Create role
   const createRole = useCallback(
-    async (name: string, description?: string, registration_allowed: boolean = false): Promise<Role | null> => {
+    async (
+      name: string,
+      description?: string,
+      registration_allowed: boolean = false,
+      registration_by_roles: number[] = []
+    ): Promise<Role | null> => {
       try {
-        const newRole = await roleService.createRole(name, description, registration_allowed);
+        const newRole = await roleService.createRole(
+          name,
+          description,
+          registration_allowed,
+          registration_by_roles
+        );
+
         setRoles((prev) => [...prev, newRole]);
         toast.success("Role Created Successfully");
         return newRole;
       } catch (error: any) {
         console.error("Create role error:", error);
-        toast.error(error.response.data.detail)
+        toast.error(error.response?.data?.detail || "Failed to create role");
         return null;
       }
     },
     []
   );
 
-  // Stable function to update a role
+  // Update role
   const updateRole = useCallback(
-    async (roleId: number, name?: string, description?: string, registration_allowed?: boolean): Promise<Role | null> => {
+    async (
+      roleId: number,
+      name?: string,
+      description?: string,
+      registration_allowed?: boolean,
+      registration_by_roles?: number[]
+    ): Promise<Role | null> => {
       try {
-        const updatedRole = await roleService.updateRole(roleId, name, description, registration_allowed);
+        const updatedRole = await roleService.updateRole(
+          roleId,
+          name,
+          description,
+          registration_allowed,
+          registration_by_roles
+        );
+
         setRoles((prev) => prev.map((r) => (r.id === roleId ? updatedRole : r)));
         toast.success("Role Updated Successfully");
         return updatedRole;
       } catch (error: any) {
         console.error("Update role error:", error);
-        toast.error(error.response.data.message)
+        toast.error(error.response?.data?.message || "Failed to update role");
         return null;
       }
     },
     []
   );
 
-  // Stable function to delete a role
+  // Delete role
   const deleteRole = useCallback(
     async (roleId: number): Promise<boolean> => {
       try {
@@ -94,13 +140,14 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
         return true;
       } catch (error: any) {
         console.error("Delete role error:", error);
-        toast.error(error.response.data.message)
+        toast.error(error.response?.data?.message || "Failed to delete role");
         return false;
       }
     },
     []
   );
 
+  // Provide context value
   const value = useMemo(
     () => ({
       roles,
@@ -108,17 +155,22 @@ export const RolesProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading,
       refreshRoles,
       getSignupRoles,
+      getCreatableRoles, // ⭐ NEW
       createRole,
       updateRole,
       deleteRole,
     }),
-    [roles, isLoading, refreshRoles, getSignupRoles, createRole, updateRole, deleteRole]
+    [roles, isLoading, refreshRoles, getSignupRoles, getCreatableRoles, createRole, updateRole, deleteRole]
   );
 
-  return <RolesContext.Provider value={value}>{children}</RolesContext.Provider>;
+  return (
+    <RolesContext.Provider value={value}>
+      {children}
+    </RolesContext.Provider>
+  );
 };
 
-// Hook to use RolesContext
+// Hook to access roles
 export const useRoles = (): RolesContextType => {
   const context = useContext(RolesContext);
   if (!context) throw new Error("useRoles must be used within a RolesProvider");

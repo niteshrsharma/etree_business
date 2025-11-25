@@ -16,7 +16,6 @@ interface UserContextType {
   isLoading: boolean;
 
   loadFields: (target_user_id?: string) => Promise<void>;
-
   updateField: (
     fieldId: number,
     value: any,
@@ -38,12 +37,21 @@ interface UserContextType {
     fieldId: number,
     target_user_id?: string
   ) => Promise<void>;
+
+  createUser: (data: {
+    full_name: string;
+    email: string;
+    password: string;
+    role_id: number;
+  }) => Promise<any>;
+
+  getUsersByRole: (role_id: number) => Promise<any[] | null>;   // ✅ NEW
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   const [fields, setFields] = useState<UserFieldResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -151,6 +159,49 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // ✅ NEW: createUser()
+  const createUser = async (data: {
+    full_name: string;
+    email: string;
+    password: string;
+    role_id: number;
+  }) => {
+    setIsLoading(true);
+    try {
+      const res = await UserService.createUser(data);
+
+      if (res.status === "success") {
+        toast.success("User created successfully");
+      }
+      return res;
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || "Failed to create user");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ NEW: Get users by role ID with backend permission check
+  const getUsersByRole = async (role_id: number): Promise<any[] | null> => {
+    setIsLoading(true);
+    try {
+      const res = await UserService.getUsersByRole(role_id);
+
+      if (res.status === "success") {
+        return res.data || [];
+      } else {
+        toast.error(res.message || "Failed to fetch users");
+        return null;
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || "You are not allowed to view these users");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) loadFields();
   }, [user]);
@@ -164,6 +215,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       uploadDocument,
       downloadDocument,
       deleteDocument,
+      createUser,
+      getUsersByRole,   // ✅ Added here
     }),
     [fields, isLoading]
   );

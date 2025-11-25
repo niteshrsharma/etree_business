@@ -9,7 +9,6 @@ router = APIRouter()
 users_bal = UsersBAL()
 roles_bal=RolesBAL()
 
-from fastapi import HTTPException
 
 @router.post("/signup", response_model=ResponseMessage)
 async def signup(response: Response, signup_data: CreateUserModel):

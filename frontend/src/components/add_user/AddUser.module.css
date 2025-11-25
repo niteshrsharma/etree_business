@@ -1,0 +1,267 @@
+.container {
+  padding: 30px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.heading {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* --- ROLE SELECT --- */
+.roleSelectWrapper {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+  font-size: 15px;
+  background-color: white;
+  cursor: pointer;
+  min-width: 250px;
+}
+
+/* --- FORM ROW --- */
+.formRow {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.formRow input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  width: 200px;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.formRow input:focus {
+  border-color: #666;
+  background-color: #fff;
+}
+
+/* Password field */
+.passwordField {
+  width: 180px !important;
+  background-color: #e8f0ff;
+  font-weight: 600;
+  display: none;
+}
+
+/* Create Button */
+.createBtn {
+  padding: 10px 20px;
+  background-color: #004a4f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.createBtn:hover {
+  background-color: #02606b;
+}
+
+/* --- SUB HEADER --- */
+.subHeading {
+  margin: 20px 0 10px 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* --- TABLE --- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.07);
+}
+
+.table thead {
+  background-color: #f5f5f5;
+}
+
+.table th {
+  text-align: left;
+  padding: 14px;
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+}
+
+.table td {
+  padding: 14px;
+  border-top: 1px solid #eee;
+  font-size: 15px;
+}
+
+/* Avatar */
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.noAvatar {
+  width: 45px;
+  height: 45px;
+  background: #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #555;
+}
+
+/* Edit Button */
+.editBtn {
+  padding: 6px 12px;
+  background-color: #005bb5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.editBtn:hover {
+  background-color: #004080;
+}
+
+/* --- MOBILE RESPONSIVE --- */
+@media (max-width: 768px) {
+  .formRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .formRow input,
+  .select {
+    width: 100%;
+  }
+
+  .createBtn {
+    width: 100%;
+  }
+
+  .table td,
+  .table th {
+    padding: 10px;
+  }
+}
+
+
+/* --- MODAL OVERLAY --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* --- MODAL BOX --- */
+.modalBox {
+  background: white;
+  width: 90%;
+  max-width: 650px;
+  max-height: 85vh;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow-y: auto;
+  animation: scaleIn 0.25s ease-out;
+}
+
+/* Scrollbars */
+.modalBox::-webkit-scrollbar {
+  width: 6px;
+}
+.modalBox::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 20px;
+}
+
+/* --- CLOSE BUTTON --- */
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #eee;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #555;
+  transition: 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: #d1d1d1;
+  color: #222;
+}
+
+/* --- TITLE --- */
+.modalTitle {
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+}
+
+/* --- CONTENT WRAPPER --- */
+.modalContent {
+  margin-top: 10px;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

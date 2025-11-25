@@ -15,12 +15,25 @@ from backend.Utils.media import save_media, del_media
 from backend.config import settings
 from backend.Schemas.ResponseMessage import ResponseMessage
 
-
 class UsersBAL:
     def __init__(self):
         self.users_dal = UsersDAL()
         self.roles_dal = RolesDAL()
         self.otps_dal = OtpsDAL()
+
+
+    def serialize_user(self, user):
+        return {
+            "user_id": str(user.Id),
+            "full_name": user.FullName,
+            "email": user.Email,
+            "role": '',
+            "profile_picture": user.ProfilePicture
+        }
+
+
+    async def serialize_users_list(self, users):
+        return [self.serialize_user(u) for u in users]
 
     # ---------------- CREATE USER ----------------
     async def create_user(self, full_name: str, email: str, password: str, role_id: int):
@@ -80,7 +93,14 @@ class UsersBAL:
         return user
 
     async def get_all_users(self, filters=None, active: bool = None):
-        return await self.users_dal.get_all_users(filters=filters, active=active)
+        users = await self.users_dal.get_all_users(filters=filters, active=active)
+
+        serialized_users= await self.serialize_users_list(users)
+        return ResponseMessage(
+            status="success",
+            message="Users fetched successfully",
+            data=serialized_users
+        )
 
     # ---------------- UPDATE USER ----------------
     async def update_user(

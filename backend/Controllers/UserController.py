@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Response
 from fastapi.responses import StreamingResponse
 from backend.BusinessAccessLayer.Users import UsersBAL
 from backend.BusinessAccessLayer.UsersFieldData import UsersFieldDataBAL
@@ -8,11 +8,123 @@ from backend.Schemas.ResponseMessage import ResponseMessage
 from backend.Schemas.Users import UserFieldValue
 from backend.Utils.media import save_protected_file, read_protected_file, del_protected_file
 import uuid
+from backend.Schemas.Users import CreateUserModel
+from backend.BusinessAccessLayer.Roles import RolesBAL
 
 router = APIRouter()
 users_bal = UsersBAL()
 fields_bal = RequiredFieldsForUsersBAL()
+roles_bal = RolesBAL()
 user_fields_data_bal = UsersFieldDataBAL()
+
+@router.post("/create-user", response_model=ResponseMessage)
+async def create_user(
+    response: Response,
+    user_data: CreateUserModel,
+    actor=Depends(users_bal.is_user_authenticated())
+):
+    # STEP 1 — Fetch the target role being assigned to the new user
+    target_role = await roles_bal.get_role(user_data.role_id)
+    if not target_role:
+        raise HTTPException(
+            status_code=404,
+            detail="Target role does not exist"
+        )
+
+    actor_role_id = actor.RoleId
+    actor_role_name = actor.Role.Name if actor.Role else None
+
+    # STEP 2 — Super User / Admin can create any role
+    if actor_role_name in ("Super User", "Admin"):
+        pass  # always allowed
+
+    else:
+        if target_role.RegistrationAllowed:
+            raise HTTPException(
+                status_code=403,
+                detail="Public signup is allowed for this role, use signup endpoint instead"
+            )
+        else:
+            # STEP 4 — Check if actor’s role is listed in registration_by_roles
+            allowed_roles = target_role.RegistrationByRoles or []
+
+            if actor_role_id not in allowed_roles:
+                raise HTTPException(
+                    status_code=403,
+                    detail="You do not have permission to create a user with this role"
+                )
+
+    # STEP 5 — Proceed with actual user creation
+    new_user = await users_bal.create_user(
+        user_data.full_name,
+        user_data.email,
+        user_data.password,
+        user_data.role_id
+    )
+
+    return new_user
+
+@router.get("/by-role/{role_id}", response_model=ResponseMessage)
+async def get_users_by_role_id(
+    role_id: int,
+    actor=Depends(users_bal.is_user_authenticated())
+):
+    # Fetch target role
+    target_role = await roles_bal.get_role(role_id)
+    if not target_role:
+        raise HTTPException(
+            status_code=404,
+            detail="Target role not found"
+        )
+
+    actor_role_id = actor.RoleId
+    actor_role_name = actor.Role.Name if actor.Role else None
+
+    # 1️⃣ SUPER USER / ADMIN → allowed, except Admin role should not be exposed
+    if actor_role_name in ("Super User", "Admin"):
+        if actor_role_name == "Admin":
+            raise HTTPException(
+                status_code=403,
+                detail="You are not allowed to view Admin users"
+            )
+
+        users = await users_bal.get_all_users(filters={"RoleId": role_id})
+        return ResponseMessage(
+            status="success",
+            message="Users fetched successfully",
+            data=users
+        )
+
+    # 2️⃣ NORMAL USER — must be explicitly allowed
+    if target_role.RegistrationAllowed:
+        raise HTTPException(
+            status_code=403,
+            detail="Public signup is allowed for this role; viewing users is restricted"
+        )
+
+    allowed_roles = target_role.RegistrationByRoles or []
+
+    if actor_role_id not in allowed_roles:
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to view users of this role"
+        )
+
+    # Ensure normal users cannot see Admin role or their own role
+    if target_role.Name == "Admin" or target_role.Id == actor_role_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to view users of this role"
+        )
+
+    # 3️⃣ GET USERS
+    users = await users_bal.get_all_users(filters={"RoleId": role_id})
+
+    return ResponseMessage(
+        status="success",
+        message="Users fetched successfully",
+        data=users
+    )
 
 
 @router.get("/me/fields", response_model=ResponseMessage)
