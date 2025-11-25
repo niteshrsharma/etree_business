@@ -67,7 +67,7 @@ export default function AddUser() {
     // Fetch users for selected role
     const loadUsersOfRole = async (roleId: number) => {
         try {
-            const res = await user.getUsersByRole(roleId);
+            const res = await user.getUsersByRole(roleId) as any;
 
             if (res?.status === "success") {
                 setUsersList(res.data || []);
