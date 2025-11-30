@@ -1,0 +1,430 @@
+
+It includes:
+
+* Finalized database model requirements
+* Authentication model rules
+* Role-based access control design
+* Permission system using `{table_name}.{method}`
+* DAL architecture with centralized SecurityDAL
+* Controller behavior
+* config_json validation
+* Future extensibility strategy
+
+---
+
+# 🚀 **FINAL CONSOLIDATED CHANGE REQUEST (CR) DOCUMENT**
+
+### **Project:** Learning Platform Backend
+
+### **Tech Stack:** FastAPI + PostgreSQL + SQLAlchemy
+
+### **Auth:** Existing (UsersBAL, RolesBAL)
+
+### **RBAC:** Implemented via Permissions & Role Permissions
+
+---
+
+# **1. Objective**
+
+This Change Request (CR) defines the final backend architecture for a scalable, secure, permission-driven content management system. It includes:
+
+* A complete data model for Tiers, Topics, Sections, Quizzes, Questions, and Answers
+* A new **database-driven Role-Permission (RBAC) system**
+* A centralized **SecurityDAL** for permission enforcement
+* Integration with existing authentication (`UsersBAL`)
+* Standard request/response/error handling rules
+* A future-proof extensible architecture
+
+---
+
+# **2. Existing Authentication (Unchanged)**
+
+Your backend already has:
+
+### ✔ `users_bal.is_user_authenticated()`
+
+* Validates login/token/session
+* Used for read-only access
+
+### ✔ `users_bal.is_valid_user('Super User', 'Admin')`
+
+* Validates elevated roles
+* Required for all write operations (insert, update, delete)
+
+### ✔ AuthController conventions:
+
+* Returns `ResponseMessage`
+* Unified error format
+* Consistent try/except patterns
+
+These remain unchanged.
+
+---
+
+# **3. New Permission System (RBAC)**
+
+### **3.1 Overview**
+
+A new database-driven RBAC module must be implemented.
+
+### **Permission Format**
+
+```
+{table_name}.{method}
+```
+
+Examples:
+
+```
+topic.select
+topic.insert
+topic.update
+topic.delete
+quiz_question.insert
+section_type.delete
+```
+
+### **Supported Methods**
+
+* select
+* insert
+* update
+* delete
+
+### **Tables Covered**
+
+* tier
+* topic
+* section_type
+* section
+* quiz
+* quiz_question
+* quiz_answer
+
+This results in **28 permissions** (7 tables × 4 actions).
+
+---
+
+# **3.2 New Database Tables**
+
+### **permissions**
+
+Stores all allowed operations.
+
+| id  | table_name | method | description      |
+| --- | ---------- | ------ | ---------------- |
+| 1   | tier       | select | Can read tiers   |
+| 2   | tier       | insert | Can create tiers |
+| ... | ...        | ...    | ...              |
+
+```sql
+CREATE TABLE permissions (
+    id SERIAL PRIMARY KEY,
+    table_name VARCHAR(100) NOT NULL,
+    method VARCHAR(20) NOT NULL,
+    description TEXT,
+    UNIQUE(table_name, method)
+);
+```
+
+---
+
+### **role_permissions**
+
+Assigns permissions to roles.
+
+| role_id | permission_id |
+| ------- | ------------- |
+| 1       | 1             |
+| 1       | 2             |
+
+```sql
+CREATE TABLE role_permissions (
+    role_id INT REFERENCES roles(id) ON DELETE CASCADE,
+    permission_id INT REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
+);
+```
+
+---
+
+# **4. Centralized Permission Enforcement**
+
+A new class must be created:
+
+```
+backend/DataAccessLayer/SecurityDAL.py
+```
+
+### **SecurityDAL Responsibilities**
+
+* Check user’s role
+* Check permissions for `{table_name, method}`
+* Throw HTTP 403 when denied
+* Provide a single enforcement point for all DALs
+
+### **SecurityDAL.enforce()**
+
+```python
+class SecurityDAL:
+    def __init__(self):
+        self.permissions_dal = PermissionsDAL()
+
+    async def enforce(self, user, table_name: str, method: str):
+        allowed = await self.permissions_dal.role_has_permission(
+            role_id=user.Role.Id,
+            table_name=table_name,
+            method=method
+        )
+
+        if not allowed:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "status": "error",
+                    "message": f"You do not have permission to {method} {table_name}",
+                    "data": None
+                }
+            )
+```
+
+---
+
+# **5. DAL Architecture Update**
+
+All DAL classes must:
+
+* Import and instantiate `SecurityDAL`
+* Enforce permissions before any SQL query
+* Receive the `user` object from controllers
+
+### **Example DAL (TierDAL)**
+
+```python
+class TierDAL:
+    def __init__(self):
+        self.security = SecurityDAL()
+
+    async def select(self, user):
+        await self.security.enforce(user, "tier", "select")
+        return await database.fetch_all("SELECT * FROM tier")
+
+    async def insert(self, user, data):
+        await self.security.enforce(user, "tier", "insert")
+        # perform insert query
+```
+
+---
+
+# **6. Controller Architecture Update**
+
+Controllers must:
+
+* Authenticate user
+* Pass user into DAL methods
+* Not perform permission checks (DAL handles it)
+* Return `ResponseMessage`
+* Follow existing error-handling patterns
+
+### **Example Controller**
+
+```python
+@router.post("/tier")
+async def create_tier(
+    payload: TierCreate,
+    user = Depends(users_bal.is_valid_user("Super User", "Admin"))
+):
+    result = await tier_dal.insert(user, payload)
+    return ResponseMessage(
+        status="success",
+        message="Tier created",
+        data=result
+    )
+```
+
+Controllers remain thin and consistent.
+
+---
+
+# **7. Content Schema (Tables in Scope)**
+
+### **Tier**
+
+* id
+* name
+* title
+* description
+
+### **Topic**
+
+* id
+* tier_id
+* title
+* duration
+* description
+
+### **Section_Type**
+
+* id
+* name
+* description
+
+### **Section**
+
+* id
+* topic_id
+* section_type_id
+* title
+* section_value
+* position
+
+### **Quiz**
+
+* id
+* topic_id
+* title
+* instructions
+
+### **Quiz_Question**
+
+* id
+* quiz_id
+* type (enum)
+* prompt
+* position
+* config_json
+
+### **Quiz_Answer**
+
+* id
+* question_id
+* text
+* is_correct
+
+---
+
+# **8. config_json Validation Rules**
+
+Each question type must validate its own schema:
+
+### MCQ
+
+```
+options: list[str]
+correct_index: int
+```
+
+### MSQ
+
+```
+options: list[str]
+correct_indices: list[int]
+```
+
+### True/False
+
+```
+correct: boolean
+```
+
+### Ordering
+
+```
+items: list[str]
+correct_order: list[int]
+```
+
+### List
+
+```
+accepted_answers: list[str]
+```
+
+### Hangman
+
+```
+word: string
+hints: list[str]
+```
+
+DAL or BAL validation must throw HTTP 400 with `ResponseMessage`.
+
+---
+
+# **9. Ordering Rules**
+
+For Sections and Questions:
+
+* New items auto-append at the bottom (max position + 1)
+* When reordering, system must prevent duplicate positions
+* Provide a reorder endpoint or logic
+
+---
+
+# **10. Cascade Delete Requirements**
+
+Deleting:
+
+* A Tier deletes its Topics
+* A Topic deletes its Sections and Quizzes
+* A Quiz deletes its Questions
+* A Question deletes its Answers
+
+Use FK `ON DELETE CASCADE` where appropriate.
+
+---
+
+# **11. Testing Requirements**
+
+### **Authentication Tests**
+
+* Invalid token → 401
+* Non-admin modifying data → 403
+* Admin succeeds
+
+### **Permission Tests**
+
+* Missing `{table, method}` permission → 403
+* Full permission → success
+
+### **Data Validation**
+
+* config_json validation
+* Foreign key integrity
+* Unique constraints
+
+### **DAL Permission Enforcement**
+
+Test SecurityDAL independently.
+
+---
+
+# **12. Future Extensibility (Key Benefit)**
+
+This architecture allows new modules to be added easily:
+
+For example, adding “Assignments” later:
+
+1. Add permissions:
+
+```
+assignment.select
+assignment.insert
+assignment.update
+assignment.delete
+```
+
+2. Add DAL:
+
+```
+AssignmentDAL(SecurityDAL)
+```
+
+3. Add controller
+
+NO changes to:
+
+* Auth
+* Global RBAC
+* Existing DALs
+* Existing controllers

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from backend.config import settings, database
-from backend.Controllers import AuthController, RoleController, RequiredFieldsForUsersController, UserController
+from backend.Controllers import AuthController, RoleController, RequiredFieldsForUsersController, UserController, RolePermissionsController
 import uvicorn
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
@@ -35,6 +35,7 @@ app.include_router(AuthController.router, prefix="/api/auth", tags=["auth"])
 app.include_router(RoleController.router, prefix="/api/roles", tags=["roles"])
 app.include_router(RequiredFieldsForUsersController.router, prefix='/api/user-required-fields', tags=["required fields for users"])
 app.include_router(UserController.router, prefix='/api/user', tags=['users'])
+app.include_router(RolePermissionsController.router, prefix='/api/role-permissions', tags=['role permissions'])
 
 
 # static file routes

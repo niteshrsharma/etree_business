@@ -128,17 +128,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE TABLE "Permissions" (
+    "Id" SERIAL PRIMARY KEY,
+    "TableName" VARCHAR(100) NOT NULL,
+    "Method" VARCHAR(20) NOT NULL,
+    "Description" TEXT,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE("TableName", "Method")
+);
 
--- this one looks og need to implement it for our own use:
+CREATE TRIGGER trg_permissions_set_timestamps
+BEFORE INSERT OR UPDATE ON "Permissions"
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
 
--- CREATE TABLE country_data (
---     id SERIAL PRIMARY KEY,
---     country TEXT,
---     data JSONB
--- );
+CREATE TABLE "RolePermissions" (
+    "RoleId" INT NOT NULL REFERENCES "Roles"("Id") ON DELETE CASCADE,
+    "PermissionId" INT NOT NULL REFERENCES "Permissions"("Id") ON DELETE CASCADE,
+    "CreatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    "UpdatedAt" TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY ("RoleId", "PermissionId")
+);
 
--- INSERT INTO country_data (country, data) VALUES
--- ('India', '{
---     "Tamil Nadu": ["Chennai", "Coimbatore"],
---     "Kerala": ["Kochi"]
--- }');
+CREATE TRIGGER trg_rolepermissions_set_timestamps
+BEFORE INSERT OR UPDATE ON "RolePermissions"
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
+

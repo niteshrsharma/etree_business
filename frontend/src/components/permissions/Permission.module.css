@@ -1,0 +1,74 @@
+.container {
+  padding: 20px;
+}
+
+.pageTitle {
+  font-size: 26px;
+  margin-bottom: 20px;
+}
+
+.section {
+  margin-bottom: 30px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+}
+
+.button {
+  padding: 8px 14px;
+  background-color: #2b6cb0;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.permissionsGrid {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.column {
+  width: 50%;
+}
+
+.permissionRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.assignButton {
+  background-color: #38a169;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.removeButton {
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.select {
+  padding: 8px;
+  width: 250px;
+  margin-bottom: 20px;
+}
